@@ -6,7 +6,7 @@ from .views import (
     DetallePedidoViewSet, PagoViewSet
 )
 
-from .views import obtener_toda_la_info
+from .views import allInfo
 
 router = DefaultRouter()
 router.register(r'clientes', ClienteViewSet)
@@ -21,5 +21,5 @@ router.register(r'pagos', PagoViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('toda-la-info/', obtener_toda_la_info, name='toda-la-info'),
+    path('all/', allInfo, name='allInfo' ),
 ]

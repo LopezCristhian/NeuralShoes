@@ -139,7 +139,7 @@ postgres_data → Guarda datos persistentes de PostgreSQL.
 
 Método                                  Endpoint                                                     Descripción 
 
-GET                                     http://127.0.0.1:8001/api/toda-la-info/                    Lista toda la información de la API
+GET                                     http://127.0.0.1:8001/api/all/                    Lista toda la información de la API
 Devuelve en formato JSON toda la información de la API.
 ![/assets/image-69.png](/assets/image-69.png)
 

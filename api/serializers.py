@@ -83,6 +83,11 @@ class TallaProductoSerializer(serializers.ModelSerializer):
 
         return instance
 
+class TallaProductoCreateSerializer(serializers.Serializer):
+    producto_id = serializers.UUIDField()
+    tallas_ids = serializers.ListField(child=serializers.UUIDField())
+    stock = serializers.IntegerField()
+
 class PedidoSerializer(serializers.ModelSerializer):
     cliente = ClienteSerializer(read_only=True)
     cliente_id = serializers.PrimaryKeyRelatedField(
@@ -92,6 +97,10 @@ class PedidoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pedido
         fields = '__all__'
+
+class PedidoCreateSerializer(serializers.Serializer):
+    cliente_id = serializers.UUIDField()
+    estado = serializers.CharField()
 
 class DetallePedidoSerializer(serializers.ModelSerializer):
     pedido = PedidoSerializer(read_only=True)
@@ -105,8 +114,13 @@ class DetallePedidoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DetallePedido
-        fields = '__all__'
+        fields = 'id', 'pedido_id', 'talla_producto', 'talla_producto_id', 'pedido', 'cantidad',
 
+class DetallePedidoCreateSerializer(serializers.Serializer):
+    pedido_id = serializers.UUIDField()
+    talla_producto_id = serializers.UUIDField()
+    cantidad = serializers.IntegerField()   
+    
 class PagoSerializer(serializers.ModelSerializer):
     pedido = PedidoSerializer(read_only=True)
     pedido_id = serializers.PrimaryKeyRelatedField(
@@ -115,4 +129,8 @@ class PagoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Pago
-        fields = '__all__'
+        fields = 'id', 'pedido_id', 'metodo_pago', 'pedido'
+        
+class PagoCreateSerializer(serializers.Serializer):
+    pedido_id = serializers.UUIDField()
+    metodo_pago = serializers.CharField()

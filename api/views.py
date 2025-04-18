@@ -2,8 +2,8 @@ from rest_framework import viewsets
 from .models import Cliente, Categoria, Marca, Producto, Talla, TallaProducto, Pedido, DetallePedido, Pago
 from .serializers import (
     ClienteSerializer, CategoriaSerializer, MarcaSerializer, ProductoSerializer, 
-    TallaSerializer, TallaProductoSerializer, PedidoSerializer, 
-    DetallePedidoSerializer, PagoSerializer
+    TallaSerializer, TallaProductoSerializer, TallaProductoCreateSerializer, PedidoSerializer, PedidoCreateSerializer, DetallePedidoSerializer, DetallePedidoCreateSerializer, 
+    PagoSerializer, PagoCreateSerializer
 )
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
@@ -16,7 +16,7 @@ from rest_framework import status
 
 @swagger_auto_schema(method='get', operation_description="Obtener toda la información de productos, tallas, pedidos, etc.")
 @api_view(['GET'])
-def obtener_toda_la_info(request):
+def allInfo(request):
     data = {
         "productos": ProductoSerializer(Producto.objects.all(), many=True).data,
         "tallas_producto": TallaProductoSerializer(TallaProducto.objects.all(), many=True).data,
@@ -80,7 +80,6 @@ class ClienteViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
 
-
 class CategoriaViewSet(viewsets.ModelViewSet):
     """
     API endpoints para gestionar categorías de productos
@@ -133,7 +132,6 @@ class CategoriaViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
 
-
 class MarcaViewSet(viewsets.ModelViewSet):
     """
     API endpoints para gestionar marcas de productos
@@ -185,7 +183,6 @@ class MarcaViewSet(viewsets.ModelViewSet):
     )
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
-
 
 class ProductoViewSet(viewsets.ModelViewSet):
     """
@@ -285,7 +282,6 @@ class ProductoViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(productos, many=True)
         return Response(serializer.data)
 
-
 class TallaViewSet(viewsets.ModelViewSet):
     """
     API endpoints para gestionar tallas
@@ -338,7 +334,6 @@ class TallaViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
 
-
 class TallaProductoViewSet(viewsets.ModelViewSet):
     """
     API endpoints para gestionar relaciones entre tallas y productos
@@ -355,7 +350,7 @@ class TallaProductoViewSet(viewsets.ModelViewSet):
     
     @swagger_auto_schema(
         operation_description="Crea una nueva relación talla-producto",
-        request_body=TallaProductoSerializer,
+        request_body=TallaProductoCreateSerializer,
         responses={201: TallaProductoSerializer()}
     )
     def create(self, request, *args, **kwargs):
@@ -370,7 +365,7 @@ class TallaProductoViewSet(viewsets.ModelViewSet):
     
     @swagger_auto_schema(
         operation_description="Actualiza una relación talla-producto existente",
-        request_body=TallaProductoSerializer,
+        request_body=TallaProductoCreateSerializer,
         responses={200: TallaProductoSerializer()}
     )
     def update(self, request, *args, **kwargs):
@@ -378,7 +373,7 @@ class TallaProductoViewSet(viewsets.ModelViewSet):
     
     @swagger_auto_schema(
         operation_description="Actualiza parcialmente una relación talla-producto existente",
-        request_body=TallaProductoSerializer,
+        request_body=TallaProductoCreateSerializer,
         responses={200: TallaProductoSerializer()}
     )
     def partial_update(self, request, *args, **kwargs):
@@ -391,29 +386,28 @@ class TallaProductoViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
     
-    @swagger_auto_schema(
-        operation_description="Filtra tallas disponibles por producto",
-        manual_parameters=[
-            openapi.Parameter(
-                'producto', 
-                openapi.IN_QUERY,
-                description="ID del producto", 
-                type=openapi.TYPE_INTEGER
-            )
-        ],
-        responses={200: TallaProductoSerializer(many=True)}
-    )
-    @action(detail=False, methods=['get'])
-    def por_producto(self, request):
-        producto_id = request.query_params.get('producto')
-        if producto_id:
-            tallas_producto = self.queryset.filter(producto_id=producto_id)
-        else:
-            tallas_producto = self.queryset.all()
+    # @swagger_auto_schema(
+    #     operation_description="Filtra tallas disponibles por producto",
+    #     manual_parameters=[
+    #         openapi.Parameter(
+    #             'producto', 
+    #             openapi.IN_QUERY,
+    #             description="ID del producto", 
+    #             type=openapi.TYPE_INTEGER
+    #         )
+    #     ],
+    #     responses={200: TallaProductoSerializer(many=True)}
+    # )
+    # @action(detail=False, methods=['get'])
+    # def por_producto(self, request):
+    #     producto_id = request.query_params.get('producto')
+    #     if producto_id:
+    #         tallas_producto = self.queryset.filter(producto_id=producto_id)
+    #     else:
+    #         tallas_producto = self.queryset.all()
         
-        serializer = self.get_serializer(tallas_producto, many=True)
-        return Response(serializer.data)
-
+    #     serializer = self.get_serializer(tallas_producto, many=True)
+    #     return Response(serializer.data)
 
 class PedidoViewSet(viewsets.ModelViewSet):
     """
@@ -431,7 +425,7 @@ class PedidoViewSet(viewsets.ModelViewSet):
     
     @swagger_auto_schema(
         operation_description="Crea un nuevo pedido",
-        request_body=PedidoSerializer,
+        request_body=PedidoCreateSerializer,
         responses={201: PedidoSerializer()}
     )
     def create(self, request, *args, **kwargs):
@@ -446,7 +440,7 @@ class PedidoViewSet(viewsets.ModelViewSet):
     
     @swagger_auto_schema(
         operation_description="Actualiza un pedido existente",
-        request_body=PedidoSerializer,
+        request_body=PedidoCreateSerializer,
         responses={200: PedidoSerializer()}
     )
     def update(self, request, *args, **kwargs):
@@ -454,7 +448,7 @@ class PedidoViewSet(viewsets.ModelViewSet):
     
     @swagger_auto_schema(
         operation_description="Actualiza parcialmente un pedido existente",
-        request_body=PedidoSerializer,
+        request_body=PedidoCreateSerializer,
         responses={200: PedidoSerializer()}
     )
     def partial_update(self, request, *args, **kwargs):
@@ -467,29 +461,28 @@ class PedidoViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
     
-    @swagger_auto_schema(
-        operation_description="Filtra pedidos por cliente",
-        manual_parameters=[
-            openapi.Parameter(
-                'cliente', 
-                openapi.IN_QUERY,
-                description="ID del cliente", 
-                type=openapi.TYPE_INTEGER
-            )
-        ],
-        responses={200: PedidoSerializer(many=True)}
-    )
-    @action(detail=False, methods=['get'])
-    def por_cliente(self, request):
-        cliente_id = request.query_params.get('cliente')
-        if cliente_id:
-            pedidos = self.queryset.filter(cliente_id=cliente_id)
-        else:
-            pedidos = self.queryset.all()
+    # @swagger_auto_schema(
+    #     operation_description="Filtra pedidos por cliente",
+    #     manual_parameters=[
+    #         openapi.Parameter(
+    #             'cliente', 
+    #             openapi.IN_QUERY,
+    #             description="ID del cliente", 
+    #             type=openapi.TYPE_INTEGER
+    #         )
+    #     ],
+    #     responses={200: PedidoSerializer(many=True)}
+    # )
+    # @action(detail=False, methods=['get'])
+    # def por_cliente(self, request):
+    #     cliente_id = request.query_params.get('cliente')
+    #     if cliente_id:
+    #         pedidos = self.queryset.filter(cliente_id=cliente_id)
+    #     else:
+    #         pedidos = self.queryset.all()
         
-        serializer = self.get_serializer(pedidos, many=True)
-        return Response(serializer.data)
-
+    #     serializer = self.get_serializer(pedidos, many=True)
+    #     return Response(serializer.data)
 
 class DetallePedidoViewSet(viewsets.ModelViewSet):
     """
@@ -507,7 +500,7 @@ class DetallePedidoViewSet(viewsets.ModelViewSet):
     
     @swagger_auto_schema(
         operation_description="Crea un nuevo detalle de pedido",
-        request_body=DetallePedidoSerializer,
+        request_body=DetallePedidoCreateSerializer,
         responses={201: DetallePedidoSerializer()}
     )
     def create(self, request, *args, **kwargs):
@@ -543,29 +536,28 @@ class DetallePedidoViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
     
-    @swagger_auto_schema(
-        operation_description="Filtra detalles por pedido",
-        manual_parameters=[
-            openapi.Parameter(
-                'pedido', 
-                openapi.IN_QUERY,
-                description="ID del pedido", 
-                type=openapi.TYPE_INTEGER
-            )
-        ],
-        responses={200: DetallePedidoSerializer(many=True)}
-    )
-    @action(detail=False, methods=['get'])
-    def por_pedido(self, request):
-        pedido_id = request.query_params.get('pedido')
-        if pedido_id:
-            detalles = self.queryset.filter(pedido_id=pedido_id)
-        else:
-            detalles = self.queryset.all()
+    # @swagger_auto_schema(
+    #     operation_description="Filtra detalles por pedido",
+    #     manual_parameters=[
+    #         openapi.Parameter(
+    #             'pedido', 
+    #             openapi.IN_QUERY,
+    #             description="ID del pedido", 
+    #             type=openapi.TYPE_INTEGER
+    #         )
+    #     ],
+    #     responses={200: DetallePedidoSerializer(many=True)}
+    # )
+    # @action(detail=False, methods=['get'])
+    # def por_pedido(self, request):
+    #     pedido_id = request.query_params.get('pedido')
+    #     if pedido_id:
+    #         detalles = self.queryset.filter(pedido_id=pedido_id)
+    #     else:
+    #         detalles = self.queryset.all()
         
-        serializer = self.get_serializer(detalles, many=True)
-        return Response(serializer.data)
-
+    #     serializer = self.get_serializer(detalles, many=True)
+    #     return Response(serializer.data)
 
 class PagoViewSet(viewsets.ModelViewSet):
     """
@@ -583,7 +575,7 @@ class PagoViewSet(viewsets.ModelViewSet):
     
     @swagger_auto_schema(
         operation_description="Crea un nuevo pago",
-        request_body=PagoSerializer,
+        request_body=PagoCreateSerializer,
         responses={201: PagoSerializer()}
     )
     def create(self, request, *args, **kwargs):
