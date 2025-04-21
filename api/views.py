@@ -14,7 +14,13 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
 
+from .auth import keycloak_protected
+from django.http import JsonResponse
+
+from rest_framework.permissions import IsAuthenticated
+
 @swagger_auto_schema(method='get', operation_description="Obtener toda la información de productos, tallas, pedidos, etc.")
+@keycloak_protected
 @api_view(['GET'])
 def allInfo(request):
     data = {
@@ -26,6 +32,9 @@ def allInfo(request):
         "marcas": MarcaSerializer(Marca.objects.all(), many=True).data,
         "tallas": TallaSerializer(Talla.objects.all(), many=True).data
     }
+    
+    #Permission_classes = [IsAuthenticated]
+    
     return Response(data, status=status.HTTP_200_OK)
 
 class ClienteViewSet(viewsets.ModelViewSet):

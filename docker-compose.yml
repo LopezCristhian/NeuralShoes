@@ -33,5 +33,33 @@ services:
     ports:
       - "8001:8000"  # 8001 en el host
 
+    # Base de datos de Keycloak
+  keycloak-db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak
+    volumes:
+      - keycloak_data:/var/lib/postgresql/data
+
+  # Keycloak Server
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.2.0 #24.0.3
+    command: start-dev
+    environment:
+      KC_DB: postgres
+      KC_DB_URL_HOST: keycloak-db
+      KC_DB_URL_DATABASE: keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8081:8080"
+    depends_on:
+      - keycloak-db
+
 volumes:
   postgres_data:
+  keycloak_data:

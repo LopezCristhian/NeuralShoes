@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'drf_yasg',
+    'django_keycloak_auth',
 ]
 
 MIDDLEWARE = [
@@ -52,7 +53,43 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    # 'keycloak.django.middleware.KeycloakMiddleware',
+    # 'django.contrib.sessions.middleware.SessionMiddleware',
 ]
+
+# Configuración de Keycloak
+KEYCLOAK_SERVER_URL = 'http://keycloak:8080/'  # Usa el nombre del servicio interno
+KEYCLOAK_REALM = 'neuralshoes'
+KEYCLOAK_CLIENT_ID = 'django-api'
+KEYCLOAK_CLIENT_SECRET = '39q2ZFcMNWTTy1uCyBWngeBCkBhSF3vM'  # El que copiaste de la pestaña Credentials
+
+# Opcional: para acceso público a tu API desde fuera de Docker
+KEYCLOAK_PUBLIC_SERVER_URL = 'http://localhost:8081/'  # URL para clientes externos
+
+AUTHENTICATION_BACKENDS = [
+    # 'django_keycloak_auth.auth.keycloakauthbackend',
+    # 'django.contrib.auth.backends.modelbackend',  # mantén el backend predeterminado de django
+    #'keycloak.django.auth.backends.KeycloakBackend',
+    'django.contrib.auth.backends.ModelBackend', 
+]
+
+
+# REST_FRAMEWORK = {
+#     'DEFAULT_AUTHENTICATION_CLASSES': (
+#         'rest_framework_simplejwt.authentication.JWTAuthentication',
+#     )
+# }
+
+# KEYCLOAK_OIDC_PROFILE_MODEL = True
+
+# KEYCLOAK_CONFIG = {
+#     'KEYCLOAK_SERVER_URL': 'http://keycloak:8080/',
+#     'KEYCLOAK_REALM': 'neuralshoes',
+#     'KEYCLOAK_CLIENT_ID': 'django-api',
+#     'KEYCLOAK_CLIENT_SECRET_KEY': 'vST7irLzb1lkPYDtVMTI306GFHJVajYd',
+#     'KEYCLOAK_AUTHORIZATION_CONFIG': 'permissions',
+# }
 
 ROOT_URLCONF = 'NeuralShoes.urls'
 
