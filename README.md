@@ -1,6 +1,10 @@
 # NeuralShoes
 Tienda de calzado (Proyecto modelos de computación)
 
+# Autores:
+- Andrés Esteban Muñoz Medina
+- Cristhian David López Toro
+
 # Descripción del proyecto NeuralShoes - Sistema de Gestión de Ventas de Calzado
 
 ## Descripción del Proyecto
