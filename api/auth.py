@@ -1,4 +1,3 @@
-# En un archivo como api/auth.py
 from functools import wraps
 from django.http import JsonResponse
 import requests
@@ -23,7 +22,11 @@ def keycloak_protected(view_func):
             )
             
             if response.status_code != 200 or not response.json().get('active', False):
-                return JsonResponse({'error': 'Token inválido o expirado'}, status=401)
+
+                #return JsonResponse({'error': 'Token inválido o expirado'}, status=401)
+                return JsonResponse({'debug': response.json()}, status=200)
+                
+                #return JsonResponse({'codigo': response.status_code, 'active': response.json().get('active', False),'error': 'Token inválido o expirado'}, status=401)                           
                 
             # Si llegamos aquí, el token es válido
             return view_func(request, *args, **kwargs)
