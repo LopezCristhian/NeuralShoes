@@ -33,6 +33,13 @@ class Marca(models.Model):
     def __str__(self):
         return self.nombre
 
+class Color(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    nombre = models.CharField(max_length=50, unique=True)
+    
+    def __str__(self):
+        return self.nombre
+    
 class Producto(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     nombre = models.CharField(max_length=100)
