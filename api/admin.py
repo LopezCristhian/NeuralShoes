@@ -12,7 +12,7 @@ class CategoriaAdmin(admin.ModelAdmin):
     search_fields = ('id', 'nombre', 'descripcion')
     
 class MarcaAdmin(admin.ModelAdmin):
-    list_display = ('id', 'nombre', 'descripcion', 'mostrar_categorias')
+    list_display = ('id', 'nombre', 'descripcion', 'imagen', 'mostrar_categorias')
     search_fields = ('id', 'nombre', 'descripcion', 'mostrar_categorias')
     list_filter = ('categorias',)
     filter_horizontal = ('categorias',)
@@ -23,23 +23,25 @@ class MarcaAdmin(admin.ModelAdmin):
     mostrar_categorias.short_description = 'Categorías'  
 
 class ProductoAdmin(admin.ModelAdmin):
-    list_display = ('id', 'nombre', 'descripcion', 'precio', 'stock', 'marca')
-    search_fields = ('id', 'nombre', 'descripcion', 'precio', 'stock', 'marca')
+    list_display = ('id', 'nombre', 'descripcion', 'precio', 'stock_total', 'imagen', 'marca')
+    search_fields = ('id', 'nombre', 'descripcion', 'precio', 'stock_total', 'marca')
     list_filter = ('marca',)
+    
+    readonly_fields = ('stock_total',)
 
 class TallaAdmin(admin.ModelAdmin): 
     list_display = ('id', 'numero',)
     search_fields = ('id', 'numero',)
 
 class TallaProductoAdmin(admin.ModelAdmin):
-    list_display = ('id', 'producto', 'mostrar_tallas', 'stock')
-    search_fields = ('id', 'producto', 'mostrar_tallas', 'stock')
+    list_display = ('id', 'producto', 'mostrar_tallas', 'stock_talla')
+    search_fields = ('id', 'producto', 'mostrar_tallas', 'stock_talla')
     
     filter_horizontal = ('tallas',)
     
     def mostrar_tallas(self, obj):
         return ", ".join([talla.numero for talla in obj.tallas.all()])
-    
+
     mostrar_tallas.short_description = 'Tallas'  
 
 class PedidoAdmin(admin.ModelAdmin):

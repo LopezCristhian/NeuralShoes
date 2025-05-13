@@ -19,7 +19,7 @@ class MarcaSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Marca
-        fields = ['id', 'nombre', 'descripcion', 'categorias', 'categorias_id']
+        fields = ['id', 'nombre', 'descripcion', 'imagen', 'categorias', 'categorias_id']
 
     def create(self, validated_data):
         categorias_data = validated_data.pop('categorias', [])  
@@ -38,7 +38,7 @@ class ProductoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Producto
-        fields = ['id', 'nombre', 'descripcion', 'precio', 'stock', 'marca', 'marca_id']
+        fields = ['id', 'nombre', 'descripcion', 'precio', 'stock_total', 'imagen', 'marca', 'color', 'marca_id']
 
     def get_marca(self, obj):
         if obj.marca:
@@ -64,16 +64,16 @@ class TallaProductoSerializer(serializers.ModelSerializer):
         source='tallas',
         write_only=True
     )
-
+    
     class Meta:
         model = TallaProducto
-        fields = ['id', 'producto', 'producto_id', 'tallas', 'tallas_ids', 'stock']
+        fields = ['id', 'producto', 'producto_id', 'tallas', 'tallas_ids', 'stock_talla']
 
     def update(self, instance, validated_data):
         tallas = validated_data.pop('tallas', None)
 
   
-        instance.stock = validated_data.get('stock', instance.stock)
+        instance.stock_talla = validated_data.get('stock_talla', instance.stock_talla)
         instance.producto = validated_data.get('producto', instance.producto)
         instance.save()
 
@@ -86,7 +86,7 @@ class TallaProductoSerializer(serializers.ModelSerializer):
 class TallaProductoCreateSerializer(serializers.Serializer):
     producto_id = serializers.UUIDField()
     tallas_ids = serializers.ListField(child=serializers.UUIDField())
-    stock = serializers.IntegerField()
+    stock_talla = serializers.IntegerField()
 
 class PedidoSerializer(serializers.ModelSerializer):
     cliente = ClienteSerializer(read_only=True)

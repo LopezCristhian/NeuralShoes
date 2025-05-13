@@ -20,6 +20,15 @@ from django.http import JsonResponse
 from rest_framework.permissions import IsAuthenticated
 from .permissions import KeycloakPermission
 
+from django.http import JsonResponse
+from django.utils.decorators import method_decorator
+from rest_framework import viewsets
+from .models import Cliente
+from .serializers import ClienteSerializer
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import status
+from .auth import keycloak_protected
+
 @swagger_auto_schema(method='get', operation_description="Obtener toda la información de productos, tallas, pedidos, etc.")
 @keycloak_protected
 @api_view(['GET'])
@@ -37,95 +46,6 @@ def allInfo(request):
     #Permission_classes = [IsAuthenticated]
     
     return JsonResponse(data, status=status.HTTP_200_OK)
-
-# class ClienteViewSet(viewsets.ModelViewSet):
-#     """
-#     API endpoints para gestionar clientes
-#     """
-#     queryset = Cliente.objects.all()
-#     serializer_class = ClienteSerializer
-    
-#     @swagger_auto_schema(
-#         operation_description="Lista todos los clientes",
-#         responses={200: ClienteSerializer(many=True)}
-#     )
-#     def list(self, request, *args, **kwargs):
-#         return super().list(request, *args, **kwargs)
-    
-#     @swagger_auto_schema(
-#         operation_description="Crea un nuevo cliente",
-#         request_body=ClienteSerializer,
-#         responses={201: ClienteSerializer()}
-#     )
-#     def create(self, request, *args, **kwargs):
-#         return super().create(request, *args, **kwargs)
-    
-#     @swagger_auto_schema(
-#         operation_description="Obtiene detalles de un cliente específico",
-#         responses={200: ClienteSerializer()}
-#     )
-#     def retrieve(self, request, *args, **kwargs):
-#         return super().retrieve(request, *args, **kwargs)
-    
-#     @swagger_auto_schema(
-#         operation_description="Actualiza un cliente existente",
-#         request_body=ClienteSerializer,
-#         responses={200: ClienteSerializer()}
-#     )
-#     def update(self, request, *args, **kwargs):
-#         return super().update(request, *args, **kwargs)
-    
-#     @swagger_auto_schema(
-#         operation_description="Actualiza parcialmente un cliente existente",
-#         request_body=ClienteSerializer,
-#         responses={200: ClienteSerializer()}
-#     )
-#     def partial_update(self, request, *args, **kwargs):
-#         return super().partial_update(request, *args, **kwargs)
-    
-#     @swagger_auto_schema(
-#         operation_description="Elimina un cliente",
-#         responses={204: "No Content"}
-#     )
-#     def destroy(self, request, *args, **kwargs):
-#         return super().destroy(request, *args, **kwargs)
-
-from functools import wraps
-from django.http import JsonResponse
-import requests
-from jose import jwt
-from django.conf import settings
-from django.utils.decorators import method_decorator
-from rest_framework import viewsets
-from .models import Cliente
-from .serializers import ClienteSerializer
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework import status
-from .auth import keycloak_protected
-
-# def keycloak_protected(view_func):
-#     @wraps(view_func)
-#     def _wrapped_view(request, *args, **kwargs):
-#         auth_header = request.headers.get('Authorization')
-#         if not auth_header or not auth_header.startswith('Bearer '):
-#             return JsonResponse({'error': 'No se proporcionó token de acceso'}, status=401)
-
-#         token = auth_header.split('Bearer ')[1]
-
-#         try:
-#             introspect_url = f"{settings.KEYCLOAK_SERVER_URL}realms/{settings.KEYCLOAK_REALM}/protocol/openid-connect/token/introspect"
-#             response = requests.post(
-#                 introspect_url,
-#                 data={'token': token, 'client_id': settings.KEYCLOAK_CLIENT_ID, 'client_secret': settings.KEYCLOAK_CLIENT_SECRET}
-#             )
-
-#             if response.status_code != 200:
-#                 return JsonResponse({'error': 'Token inválido o expirado'}, status=401)
-
-#             return view_func(request, *args, **kwargs)
-#         except Exception as e:
-#             return JsonResponse({'error': str(e)}, status=401)
-#     return _wrapped_view
 
 @method_decorator(keycloak_protected, name='dispatch')
 class ClienteViewSet(viewsets.ModelViewSet):
@@ -285,8 +205,8 @@ class MarcaViewSet(viewsets.ModelViewSet):
     )
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
-
-@method_decorator(keycloak_protected, name='dispatch')
+    
+#@method_decorator(keycloak_protected, name='dispatch')
 class ProductoViewSet(viewsets.ModelViewSet):
     """
     API endpoints para gestionar productos

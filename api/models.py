@@ -27,6 +27,7 @@ class Marca(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     nombre = models.CharField(max_length=50, unique=True)
     descripcion = models.TextField(blank=True, null=True)
+    imagen = models.ImageField(upload_to='brands', blank=True, null=True)
     categorias = models.ManyToManyField(Categoria, blank=True)  
 
     def __str__(self):
@@ -37,12 +38,13 @@ class Producto(models.Model):
     nombre = models.CharField(max_length=100)
     descripcion = models.TextField(blank=True, null=True)
     precio = models.DecimalField(max_digits=10, decimal_places=2)
-    stock = models.IntegerField(default=0)
+    stock_total = models.IntegerField(default=0, blank=True, null=True)
+    imagen = models.ImageField(upload_to='products', blank=True, null=True)
     marca = models.ForeignKey(Marca, on_delete=models.CASCADE, null=True, blank=True) 
 
     def __str__(self):
         return self.nombre
-
+            
 class Talla(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     numero = models.CharField(max_length=10, unique=True)
@@ -53,12 +55,19 @@ class Talla(models.Model):
 class TallaProducto(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
-    tallas = models.ManyToManyField(Talla, blank=True)  
-    stock = models.IntegerField(default=0)
+    tallas = models.ManyToManyField(Talla, blank=True) 
+    stock_talla = models.IntegerField(default=0)
 
     def __str__(self):
         tallas = ", ".join([talla.numero for talla in self.tallas.all()])
         return f"{self.producto.nombre} - {tallas}" if tallas else self.producto.nombre
+            
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.producto.stock_total = sum([talla_producto.stock_talla for talla_producto in TallaProducto.objects.filter(producto=self.producto)])
+        self.producto.save()
+        
+    # Hacer funcion que valide que no salga la talla que ya tiene asignada
 
 class Pedido(models.Model):
     ESTADOS = [
@@ -75,34 +84,30 @@ class Pedido(models.Model):
     def __str__(self):
         return f'{self.cliente.nombre} - {self.estado}'
 
-# En este modelo hay que controlar que se pueda hacer varios pedidos en un mismo de talle
-# por ejemplo que se pueda comprar un producto x en diferentes tallas
 class DetallePedido(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE)
     talla_producto = models.ForeignKey(TallaProducto, on_delete=models.CASCADE)
     cantidad = models.PositiveIntegerField()
     precio_unitario = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    
-    class Meta:
-        unique_together = ('pedido', 'talla_producto')
-    
-    
+        
     def clean(self):
-        if self.talla_producto.stock < self.cantidad:
+        if self.talla_producto.stock_talla < self.cantidad:
             raise ValidationError(f"Stock insuficiente para {self.talla_producto.producto.nombre} con talla(s): {', '.join([t.numero for t in self.talla_producto.tallas.all()])}")
-
+        
     def save(self, *args, **kwargs):
-        self.clean() 
-
-        self.precio_unitario = self.talla_producto.producto.precio
-
-        if not self.pk:
-            self.talla_producto.stock -= self.cantidad
-            self.talla_producto.save()
-
+        self.clean()
         super().save(*args, **kwargs)
 
+        self.precio_unitario = self.talla_producto.producto.precio
+        self.talla_producto.producto.stock_total -= self.cantidad
+        self.talla_producto.stock_talla -= self.cantidad        
+        
+        self.talla_producto.save()
+        self.talla_producto.producto.save()
+        
+        super().save(*args, **kwargs)
+   
     def __str__(self):
         return f"{self.pedido.cliente.nombre} - {self.pedido.estado} - {self.talla_producto.producto.nombre}"
 
