@@ -46,6 +46,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # <-- Agrega esto al inicio
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -53,10 +54,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
-    # 'keycloak.django.middleware.KeycloakMiddleware',
-    # 'django.contrib.sessions.middleware.SessionMiddleware',
 ]
+
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 # Configuración de Keycloak
 KEYCLOAK_SERVER_URL = 'http://keycloak:8080/'  # Usa el nombre del servicio interno

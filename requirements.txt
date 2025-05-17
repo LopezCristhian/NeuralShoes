@@ -5,6 +5,7 @@ djangorestframework==3.16
 drf-yasg==1.21.10
 inflection==0.5.1
 packaging==24.2
+Faker
 pytz==2025.2
 PyYAML==6.0.2
 sqlparse==0.5.3

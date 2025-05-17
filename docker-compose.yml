@@ -35,7 +35,7 @@ services:
 
     # Base de datos de Keycloak
   keycloak-db:
-    image: postgres:13
+    image: postgres:latest
     environment:
       POSTGRES_DB: keycloak
       POSTGRES_USER: keycloak
@@ -45,7 +45,7 @@ services:
 
   # Keycloak Server
   keycloak:
-    image: quay.io/keycloak/keycloak:26.2.0 #24.0.3
+    image: quay.io/keycloak/keycloak:latest
     command: start-dev
     environment:
       KC_DB: postgres

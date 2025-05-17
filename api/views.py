@@ -180,7 +180,7 @@ class ClienteViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
 
-@method_decorator(keycloak_protected, name='dispatch')
+# @method_decorator(keycloak_protected, name='dispatch')
 class CategoriaViewSet(viewsets.ModelViewSet):
     """
     API endpoints para gestionar categorías de productos
@@ -286,7 +286,7 @@ class MarcaViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
 
-@method_decorator(keycloak_protected, name='dispatch')
+# @method_decorator(keycloak_protected, name='dispatch')
 class ProductoViewSet(viewsets.ModelViewSet):
     """
     API endpoints para gestionar productos

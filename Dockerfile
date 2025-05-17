@@ -16,5 +16,4 @@ COPY . /app
 # Expone el puerto 8000 para acceder a Django
 EXPOSE 8000
 
-# Comando para ejecutar el servidor de Django
-CMD ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]
+CMD ["sh", "-c", "python manage.py migrate && python manage.py poblar_db && python manage.py runserver 0.0.0.0:8000"]
