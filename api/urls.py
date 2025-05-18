@@ -1,20 +1,29 @@
-from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+from django.urls import path, include
+from .views import allInfo
+
 from .views import (
-    ClienteViewSet, CategoriaViewSet,MarcaViewSet, ProductoViewSet, 
-    TallaViewSet, TallaProductoViewSet, PedidoViewSet, 
-    DetallePedidoViewSet, PagoViewSet
+    ClienteViewSet, 
+    CategoriaViewSet,
+    MarcaViewSet,
+    TallaViewSet,
+    ColorViewSet,
+    ProductoViewSet, 
+    ProductoTallaColorViewSet,
+    PedidoViewSet,
+    DetallePedidoViewSet,
+    PagoViewSet
 )
 
-from .views import allInfo
 
 router = DefaultRouter()
 router.register(r'clientes', ClienteViewSet)
 router.register(r'categorias', CategoriaViewSet)
 router.register(r'marcas', MarcaViewSet)
-router.register(r'productos', ProductoViewSet)
 router.register(r'tallas', TallaViewSet)
-router.register(r'talla-productos', TallaProductoViewSet)
+router.register(r'colores', ColorViewSet)
+router.register(r'productos', ProductoViewSet)
+router.register(r'productos-talla-color', ProductoTallaColorViewSet)
 router.register(r'pedidos', PedidoViewSet)
 router.register(r'detalles-pedido', DetallePedidoViewSet)
 router.register(r'pagos', PagoViewSet)
