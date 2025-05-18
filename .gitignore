@@ -1,1 +1,11 @@
 venv/
+#all python cache
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+**/__pycache__/
+
+api/__pycache__/
+api/*.pyc
