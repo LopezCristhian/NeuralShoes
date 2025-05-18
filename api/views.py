@@ -233,7 +233,7 @@ class CategoriaViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
 
-@method_decorator(keycloak_protected, name='dispatch')
+# @method_decorator(keycloak_protected, name='dispatch')
 class MarcaViewSet(viewsets.ModelViewSet):
     """
     API endpoints para gestionar marcas de productos
