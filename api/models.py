@@ -1,6 +1,6 @@
-import uuid # Importar uuid para generar IDs únicos
-from django.db import models
 from django.core.exceptions import ValidationError
+from django.db import models
+import uuid # Importar uuid para generar IDs únicos
 
 # Create your models here.
 
@@ -33,6 +33,13 @@ class Marca(models.Model):
     def __str__(self):
         return self.nombre
 
+class Talla(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    numero = models.CharField(max_length=10, unique=True)
+    
+    def __str__(self):
+        return self.numero
+
 class Color(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     nombre = models.CharField(max_length=50, unique=True)
@@ -47,35 +54,41 @@ class Producto(models.Model):
     precio = models.DecimalField(max_digits=10, decimal_places=2)
     stock_total = models.IntegerField(default=0, blank=True, null=True)
     imagen = models.ImageField(upload_to='products', blank=True, null=True)
-    marca = models.ForeignKey(Marca, on_delete=models.CASCADE, null=True, blank=True) 
+    marca = models.ForeignKey(Marca, on_delete=models.CASCADE, null=True, blank=True)
+    colores = models.ManyToManyField(Color, through='ProductoTallaColor')
+    tallas = models.ManyToManyField(Talla, through='ProductoTallaColor')
 
     def __str__(self):
         return self.nombre
-            
-class Talla(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    numero = models.CharField(max_length=10, unique=True)
-    
-    def __str__(self):
-        return self.numero
 
-class TallaProducto(models.Model):
+class ProductoTallaColor(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
-    tallas = models.ManyToManyField(Talla, blank=True) 
-    stock_talla = models.IntegerField(default=0)
+    talla = models.ForeignKey(Talla, on_delete=models.CASCADE)
+    color = models.ForeignKey(Color, on_delete=models.CASCADE)
+    stock = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        unique_together = ('producto', 'talla', 'color')  # Evitar duplicados
 
     def __str__(self):
-        tallas = ", ".join([talla.numero for talla in self.tallas.all()])
-        return f"{self.producto.nombre} - {tallas}" if tallas else self.producto.nombre
-            
+        return f"{self.producto.nombre} - Talla: {self.talla.numero} - Color: {self.color.nombre}"
+
+    def restar_stock(self, cantidad):
+        """Restar el stock de esta combinación de producto, talla y color."""
+        if self.stock >= cantidad:
+            self.stock -= cantidad
+            self.save()
+            self.producto.stock_total -= cantidad
+        else:
+            raise ValidationError(f"Stock insuficiente para {self.producto.nombre} - Talla: {self.talla.numero} - Color: {self.color.nombre}")
+        
+    # Función que actualiza el stock total del producto con stock del producto_talla_color
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        self.producto.stock_total = sum([talla_producto.stock_talla for talla_producto in TallaProducto.objects.filter(producto=self.producto)])
-        self.producto.save()
+        self.producto.stock_total = sum([variacion.stock for variacion in ProductoTallaColor.objects.filter(producto=self.producto)])
+        self.producto.save()        
         
-    # Hacer funcion que valide que no salga la talla que ya tiene asignada
-
 class Pedido(models.Model):
     ESTADOS = [
         ('Pendiente', 'Pendiente'),
@@ -94,29 +107,28 @@ class Pedido(models.Model):
 class DetallePedido(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE)
-    talla_producto = models.ForeignKey(TallaProducto, on_delete=models.CASCADE)
+    variacion = models.ForeignKey(ProductoTallaColor, on_delete=models.CASCADE)
     cantidad = models.PositiveIntegerField()
     precio_unitario = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-        
+
     def clean(self):
-        if self.talla_producto.stock_talla < self.cantidad:
-            raise ValidationError(f"Stock insuficiente para {self.talla_producto.producto.nombre} con talla(s): {', '.join([t.numero for t in self.talla_producto.tallas.all()])}")
-        
+        if self.variacion.stock < self.cantidad:
+            raise ValidationError(f"Stock insuficiente para {self.variacion.producto.nombre} - Talla: {self.variacion.talla.numero} - Color: {self.variacion.color.nombre}")
+
     def save(self, *args, **kwargs):
         self.clean()
+        self.precio_unitario = self.variacion.producto.precio
+
+        # Descontar stock
+        self.variacion.restar_stock(self.cantidad)
+
+        # Actualizar stock total del producto
+        self.variacion.producto.stock_total -= self.cantidad
+
         super().save(*args, **kwargs)
 
-        self.precio_unitario = self.talla_producto.producto.precio
-        self.talla_producto.producto.stock_total -= self.cantidad
-        self.talla_producto.stock_talla -= self.cantidad        
-        
-        self.talla_producto.save()
-        self.talla_producto.producto.save()
-        
-        super().save(*args, **kwargs)
-   
     def __str__(self):
-        return f"{self.pedido.cliente.nombre} - {self.pedido.estado} - {self.talla_producto.producto.nombre}"
+        return f"{self.pedido.cliente.nombre} - {self.variacion}"
 
 class Pago(models.Model):
     METODOS_PAGO = [

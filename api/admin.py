@@ -1,5 +1,5 @@
+from api.models import Cliente, Categoria, Marca, Talla, Color, Producto, ProductoTallaColor, Pedido, DetallePedido, Pago
 from django.contrib import admin
-from api.models import Cliente, Categoria, Producto, Talla, TallaProducto, Pedido, DetallePedido, Pago, Marca
 
 # Register your models here.
 class ClienteAdmin(admin.ModelAdmin):
@@ -8,7 +8,7 @@ class ClienteAdmin(admin.ModelAdmin):
     date_hierarchy = 'fecha_registro'
     
 class CategoriaAdmin(admin.ModelAdmin):
-    list_display = ('id', 'nombre', 'descripcion',  )
+    list_display = ('id', 'nombre', 'descripcion',)
     search_fields = ('id', 'nombre', 'descripcion')
     
 class MarcaAdmin(admin.ModelAdmin):
@@ -23,26 +23,46 @@ class MarcaAdmin(admin.ModelAdmin):
     mostrar_categorias.short_description = 'Categorías'  
 
 class ProductoAdmin(admin.ModelAdmin):
-    list_display = ('id', 'nombre', 'descripcion', 'precio', 'stock_total', 'imagen', 'marca')
+    list_display = ('id', 'nombre', 'descripcion', 'precio', 'stock_total', 'imagen',  'mostrar_colores', 'mostrar_tallas')
     search_fields = ('id', 'nombre', 'descripcion', 'precio', 'stock_total', 'marca')
-    list_filter = ('marca',)
+    list_filter = ('marca', 'colores', 'tallas')
+    #filter_horizontal = ('colores', 'tallas')
     
     readonly_fields = ('stock_total',)
+    
+    def mostrar_colores(self, obj):
+        return ", ".join([color.nombre for color in obj.colores.all()])
+    mostrar_colores.short_description = 'Colores'
+    
+    def mostrar_tallas(self, obj):
+        return ", ".join([talla.numero for talla in obj.tallas.all()])
+    mostrar_tallas.short_description = 'Tallas'
 
 class TallaAdmin(admin.ModelAdmin): 
     list_display = ('id', 'numero',)
     search_fields = ('id', 'numero',)
+    list_filter = ('id', 'numero',)
 
-class TallaProductoAdmin(admin.ModelAdmin):
-    list_display = ('id', 'producto', 'mostrar_tallas', 'stock_talla')
-    search_fields = ('id', 'producto', 'mostrar_tallas', 'stock_talla')
+class ColorAdmin(admin.ModelAdmin):
+    list_display = ('id', 'nombre',)
+    search_fields = ('id', 'nombre',)
+    list_filter = ('id', 'nombre',)
+
+class ProductoTallaColorAdmin(admin.ModelAdmin):
+    list_display = ('id', 'producto', 'talla', 'color', 'stock')
+    search_fields = ('id', 'producto', 'mostrar_tallas', 'mostrar_colores', 'stock')
     
-    filter_horizontal = ('tallas',)
+    list_filter = ('producto', 'talla', 'color')
     
     def mostrar_tallas(self, obj):
-        return ", ".join([talla.numero for talla in obj.tallas.all()])
-
-    mostrar_tallas.short_description = 'Tallas'  
+        return ", ".join([talla.numero for talla in obj.talla.all()])
+    
+    mostrar_tallas.short_description = 'Tallas'
+    
+    def mostrar_colores(self, obj):
+        return ", ".join([color.nombre for color in obj.color.all()])
+    
+    mostrar_colores.short_description = 'Colores'
 
 class PedidoAdmin(admin.ModelAdmin):
     list_display = ('id', 'cliente', 'fecha_pedido', 'estado')
@@ -51,18 +71,16 @@ class PedidoAdmin(admin.ModelAdmin):
     date_hierarchy = 'fecha_pedido'
     
 class DetallePedidoAdmin(admin.ModelAdmin):
-    list_display = ('id', 'pedido', 'mostrar_talla_producto', 'cantidad', 'precio_unitario')
+    list_display = ('id', 'pedido', 'mostrar_producto_talla_color', 'cantidad', 'precio_unitario')
     search_fields = ('id', 'pedido', 'cantidad', 'precio_unitario')
     list_filter = ('id', 'pedido', 'cantidad', 'precio_unitario')
-    #filter_horizontal = ('mostrar_talla_producto',)
+    
     readonly_fields = ('precio_unitario',)
-    #exclude = ('precio_unitario',)
     
-    def mostrar_talla_producto(self, obj):
-        tallas = ", ".join([tallas.numero for tallas in obj.talla_producto.tallas.all()])
-        return f"{obj.talla_producto.producto.nombre} - {tallas}" if tallas else obj.talla_producto.producto.nombre 
+    def mostrar_producto_talla_color(self, obj):
+        return f"{obj.variacion.producto.nombre} - Talla: {obj.variacion.talla.numero} - Color: {obj.variacion.color.nombre}"
     
-    mostrar_talla_producto.short_description = 'Producto - Talla'
+    mostrar_producto_talla_color.short_description = 'Producto - Talla - Color'
 
 class PagoAdmin(admin.ModelAdmin):
     list_display = ('id', 'pedido', 'metodo_pago', 'monto', 'fecha_pago')
@@ -70,14 +88,14 @@ class PagoAdmin(admin.ModelAdmin):
     list_filter = ('id','pedido', 'metodo_pago', 'monto', 'fecha_pago')
     date_hierarchy = 'fecha_pago'
     readonly_fields = ('monto',)
-    #exclude = ('monto',)
 
 admin.site.register(Cliente, ClienteAdmin)
 admin.site.register(Categoria, CategoriaAdmin)
+admin.site.register(Marca, MarcaAdmin)
 admin.site.register(Producto, ProductoAdmin)
 admin.site.register(Talla, TallaAdmin)
-admin.site.register(TallaProducto, TallaProductoAdmin)
+admin.site.register(Color, ColorAdmin)  # Registro de Color
+admin.site.register(ProductoTallaColor, ProductoTallaColorAdmin)  # Registro de ProductoTallaColor
 admin.site.register(Pedido, PedidoAdmin)
 admin.site.register(DetallePedido, DetallePedidoAdmin)
 admin.site.register(Pago, PagoAdmin)
-admin.site.register(Marca, MarcaAdmin)
