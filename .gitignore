@@ -1,8 +1,11 @@
-# virtual environment
 venv/
-
-# pycache files
+#all python cache
+venv/
 __pycache__/
-*.py[cod]
-*.pyo
 *.pyc
+*.pyo
+*.pyd
+**/__pycache__/
+
+api/__pycache__/
+api/*.pyc

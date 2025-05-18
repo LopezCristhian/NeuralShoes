@@ -117,6 +117,10 @@ class ClienteViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
 
+<<<<<<< HEAD
+=======
+# @method_decorator(keycloak_protected, name='dispatch')
+>>>>>>> 7f46d6ba8b2c4bbde56f27250f2e9ba62952343b
 class CategoriaViewSet(viewsets.ModelViewSet):
     """
     API endpoints para gestionar categorias
@@ -177,6 +181,10 @@ class CategoriaViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
 
+<<<<<<< HEAD
+=======
+# @method_decorator(keycloak_protected, name='dispatch')
+>>>>>>> 7f46d6ba8b2c4bbde56f27250f2e9ba62952343b
 class MarcaViewSet(viewsets.ModelViewSet):
     """
     API endpoints para gestionar marcas
@@ -236,6 +244,109 @@ class MarcaViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
 
+<<<<<<< HEAD
+=======
+# @method_decorator(keycloak_protected, name='dispatch')
+class ProductoViewSet(viewsets.ModelViewSet):
+    """
+    API endpoints para gestionar productos
+    """
+    queryset = Producto.objects.all()
+    serializer_class = ProductoSerializer
+    
+    @swagger_auto_schema(
+        operation_description="Lista todos los productos disponibles",
+        responses={200: ProductoSerializer(many=True)}
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+    
+    @swagger_auto_schema(
+        operation_description="Crea un nuevo producto",
+        request_body=ProductoSerializer,
+        responses={201: ProductoSerializer()}
+    )
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+    
+    @swagger_auto_schema(
+        operation_description="Obtiene detalles de un producto específico",
+        responses={200: ProductoSerializer()}
+    )
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+    
+    @swagger_auto_schema(
+        operation_description="Actualiza un producto existente",
+        request_body=ProductoSerializer,
+        responses={200: ProductoSerializer()}
+    )
+    def update(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
+    
+    @swagger_auto_schema(
+        operation_description="Actualiza parcialmente un producto existente",
+        request_body=ProductoSerializer,
+        responses={200: ProductoSerializer()}
+    )
+    def partial_update(self, request, *args, **kwargs):
+        return super().partial_update(request, *args, **kwargs)
+    
+    @swagger_auto_schema(
+        operation_description="Elimina un producto",
+        responses={204: "No Content"}
+    )
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
+    
+    @swagger_auto_schema(
+        operation_description="Filtra productos por categoría",
+        manual_parameters=[
+            openapi.Parameter(
+                'categoria', 
+                openapi.IN_QUERY,
+                description="ID de la categoría", 
+                type=openapi.TYPE_INTEGER
+            )
+        ],
+        responses={200: ProductoSerializer(many=True)}
+    )
+    @action(detail=False, methods=['get'])
+    def por_categoria(self, request):
+        categoria_id = request.query_params.get('categoria')
+        if categoria_id:
+            productos = self.queryset.filter(categoria_id=categoria_id)
+        else:
+            productos = self.queryset.all()
+        
+        serializer = self.get_serializer(productos, many=True)
+        return Response(serializer.data)
+    
+    @swagger_auto_schema(
+        operation_description="Filtra productos por marca",
+        manual_parameters=[
+            openapi.Parameter(
+                'marca', 
+                openapi.IN_QUERY,
+                description="ID de la marca", 
+                type=openapi.TYPE_INTEGER
+            )
+        ],
+        responses={200: ProductoSerializer(many=True)}
+    )
+    @action(detail=False, methods=['get'])
+    def por_marca(self, request):
+        marca_id = request.query_params.get('marca')
+        if marca_id:
+            productos = self.queryset.filter(marca_id=marca_id)
+        else:
+            productos = self.queryset.all()
+        
+        serializer = self.get_serializer(productos, many=True)
+        return Response(serializer.data)
+
+@method_decorator(keycloak_protected, name='dispatch')
+>>>>>>> 7f46d6ba8b2c4bbde56f27250f2e9ba62952343b
 class TallaViewSet(viewsets.ModelViewSet):
     """
     API endpoints para gestionar tallas
