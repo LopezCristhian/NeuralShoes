@@ -1,10 +1,13 @@
 from django.core.exceptions import ValidationError
+#from django.contrib.auth.models import User
+from django.db import transaction
 from django.db import models
 import uuid # Importar uuid para generar IDs únicos
 
 # Create your models here.
 
 class Cliente(models.Model):
+    #user = models.OneToOneField(User, on_delete=models.CASCADE)
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)  
     nombre = models.CharField(max_length=100)
     correo = models.EmailField(unique=True)
@@ -53,13 +56,22 @@ class Producto(models.Model):
     descripcion = models.TextField(blank=True, null=True)
     precio = models.DecimalField(max_digits=10, decimal_places=2)
     stock_total = models.IntegerField(default=0, blank=True, null=True)
-    imagen = models.ImageField(upload_to='products', blank=True, null=True)
+    #imagen = models.ImageField(upload_to='products', blank=True, null=True)
     marca = models.ForeignKey(Marca, on_delete=models.CASCADE, null=True, blank=True)
     colores = models.ManyToManyField(Color, through='ProductoTallaColor')
     tallas = models.ManyToManyField(Talla, through='ProductoTallaColor')
 
     def __str__(self):
         return self.nombre
+
+class ProductoImagen(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    producto = models.ForeignKey(Producto, related_name='imagenes', on_delete=models.CASCADE)
+    imagen = models.ImageField(upload_to='products/')
+    #descripcion = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+        return f"Imagen de {self.producto.nombre}"
 
 class ProductoTallaColor(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -89,6 +101,83 @@ class ProductoTallaColor(models.Model):
         self.producto.stock_total = sum([variacion.stock for variacion in ProductoTallaColor.objects.filter(producto=self.producto)])
         self.producto.save()        
         
+class Carrito(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    cliente = models.ForeignKey('Cliente', on_delete=models.CASCADE, related_name='carritos')
+    creado = models.DateTimeField(auto_now_add=True)
+    actualizado = models.DateTimeField(auto_now=True)
+
+    def total(self):
+        return sum([item.subtotal() for item in self.items.all()])
+
+    def __str__(self):
+        return f"Carrito de {self.cliente.nombre} ({self.id})"
+
+class ItemCarrito(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    carrito = models.ForeignKey(Carrito, on_delete=models.CASCADE, related_name='items')
+    variacion = models.ForeignKey('ProductoTallaColor', on_delete=models.CASCADE)
+    cantidad = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        unique_together = ('carrito', 'variacion')  # evita duplicados
+
+    def subtotal(self):
+        return self.variacion.producto.precio * self.cantidad
+    
+    # Qur no supere el stock total del producto
+    def clean(self):
+        if self.cantidad > self.variacion.producto.stock_total:
+            raise ValidationError(f"Cantidad excede el stock total del producto {self.variacion.producto.nombre}")     
+
+    def __str__(self):
+        return f"{self.variacion} x {self.cantidad}"
+
+def agregar_o_actualizar_item(carrito, variacion, cantidad):
+    item, creado = ItemCarrito.objects.get_or_create(carrito=carrito, variacion=variacion)
+    
+    if cantidad <= 0:
+        item.delete()
+    else:
+        if cantidad > variacion.stock:
+            raise ValidationError(f"Stock insuficiente para {variacion}")
+        item.cantidad = cantidad
+        item.save()
+
+def convertir_carrito_a_pedido(carrito):
+    if not carrito.items.exists():
+        raise ValidationError("El carrito está vacío.")
+
+    with transaction.atomic():
+        # Crear el pedido
+        pedido = Pedido.objects.create(
+            cliente=carrito.cliente,
+            estado='Pendiente'
+        )
+
+        for item in carrito.items.all():
+            variacion = item.variacion
+            cantidad = item.cantidad
+
+            if variacion.stock < cantidad:
+                raise ValidationError(f"Stock insuficiente para {variacion}")
+
+            # Crear detalle de pedido (esto ya descuenta stock automáticamente)
+            DetallePedido.objects.create(
+                pedido=pedido,
+                variacion=variacion,
+                cantidad=cantidad
+            )
+
+        # Marcar el carrito como inactivo o eliminarlo
+        carrito.activo = False
+        carrito.save()
+
+        return pedido
+
+def eliminar_item_del_carrito(carrito, variacion):
+    ItemCarrito.objects.filter(carrito=carrito, variacion=variacion).delete()
+
 class Pedido(models.Model):
     ESTADOS = [
         ('Pendiente', 'Pendiente'),

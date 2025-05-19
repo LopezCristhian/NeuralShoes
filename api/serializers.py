@@ -1,4 +1,4 @@
-from .models import Cliente, Categoria, Marca, Talla,  Color, Producto, ProductoTallaColor, Pedido, DetallePedido, Pago
+from .models import Cliente, Categoria, Marca, Talla,  Color, Producto, ProductoImagen, ProductoTallaColor, Carrito, ItemCarrito, Pedido, DetallePedido, Pago
 from rest_framework import serializers
 
 class ClienteSerializer(serializers.ModelSerializer):
@@ -37,7 +37,14 @@ class ColorSerializer(serializers.ModelSerializer):
         model = Color
         fields = '__all__'
 
+class ProductoImagenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductoImagen
+        fields = ['id', 'imagen']
+
 class ProductoSerializer(serializers.ModelSerializer):
+    imagenes = ProductoImagenSerializer(many=True, read_only=True)  # Relación para las imágenes
+    
     marca = MarcaSerializer(read_only=True)  # Mostrar información de la marca
     marca_id = serializers.PrimaryKeyRelatedField(
         queryset=Marca.objects.all(), source='marca', write_only=True
@@ -47,7 +54,7 @@ class ProductoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Producto
-        fields = ['id', 'nombre', 'descripcion', 'precio', 'stock_total', 'imagen', 'marca', 'colores', 'tallas', 'marca_id']
+        fields = ['id', 'nombre', 'descripcion', 'precio', 'stock_total', 'imagenes', 'marca', 'colores', 'tallas', 'marca_id']
         
     def get_marca(self, obj):
         if obj.marca:
@@ -112,6 +119,28 @@ class ProductoTallaColorCreateSerializer(serializers.Serializer):
     color_id = serializers.UUIDField()  # ID del color
     stock = serializers.IntegerField()  # Stock de la variación   
     
+class ItemCarritoSerializer(serializers.ModelSerializer):
+    variacion = ProductoTallaColorSerializer(read_only=True)
+    subtotal = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ItemCarrito
+        fields = ['id', 'variacion', 'cantidad', 'subtotal']
+
+    def get_subtotal(self, obj):
+        return obj.cantidad * obj.variacion.precio
+
+class CarritoSerializer(serializers.ModelSerializer):
+    items = ItemCarritoSerializer(many=True, read_only=True)
+    total = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Carrito
+        fields = ['id', 'cliente', 'actualizado', 'items', 'total']
+
+    def get_total(self, obj):
+        return sum([item.cantidad * item.variacion.precio for item in obj.items.all()])
+
 class PedidoSerializer(serializers.ModelSerializer):
     cliente = ClienteSerializer(read_only=True)  # Mostrar datos del cliente
     cliente_id = serializers.PrimaryKeyRelatedField(

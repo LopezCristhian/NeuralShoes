@@ -1,5 +1,5 @@
+from api.models import Cliente, Categoria, Marca, Talla, Color, Producto, ProductoTallaColor, Pedido, DetallePedido, Pago
 from django.core.management.base import BaseCommand
-from api.models import Cliente, Categoria, Marca, Producto, Talla, TallaProducto
 from faker import Faker
 import random
 
@@ -10,12 +10,16 @@ class Command(BaseCommand):
         fake = Faker('es_MX')
 
         # --- ELIMINAR TODOS LOS DATOS ---
-        TallaProducto.objects.all().delete()
-        Producto.objects.all().delete()
-        Marca.objects.all().delete()
-        Categoria.objects.all().delete()
-        Talla.objects.all().delete()
         Cliente.objects.all().delete()
+        Categoria.objects.all().delete()
+        Marca.objects.all().delete()
+        Talla.objects.all().delete()
+        Color.objects.all().delete()
+        Producto.objects.all().delete()
+        ProductoTallaColor.objects.all().delete()
+        Pedido.objects.all().delete()
+        DetallePedido.objects.all().delete()
+        Pago.objects.all().delete()
         # --- FIN BLOQUE ELIMINAR ---
 
         # Categorías
@@ -96,7 +100,7 @@ class Command(BaseCommand):
 
         # TallaProducto (relaciona productos con tallas)
         for producto in productos:
-            tp = TallaProducto.objects.create(
+            tp = ProductoTallaColor.objects.create(
                 producto=producto,
                 stock=random.randint(5, 30)
             )

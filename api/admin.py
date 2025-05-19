@@ -1,4 +1,4 @@
-from api.models import Cliente, Categoria, Marca, Talla, Color, Producto, ProductoTallaColor, Pedido, DetallePedido, Pago
+from api.models import Cliente, Categoria, Marca, Talla, Color, Producto, ProductoImagen, ProductoTallaColor, Carrito, ItemCarrito, Pedido, DetallePedido, Pago
 from django.contrib import admin
 
 # Register your models here.
@@ -22,10 +22,16 @@ class MarcaAdmin(admin.ModelAdmin):
     
     mostrar_categorias.short_description = 'Categorías'  
 
+class ProductoImagenInline(admin.TabularInline):
+    model = ProductoImagen
+    extra = 1  # Cuántas filas extra mostrar para agregar nuevas imágenes
+
 class ProductoAdmin(admin.ModelAdmin):
-    list_display = ('id', 'nombre', 'descripcion', 'precio', 'stock_total', 'imagen',  'mostrar_colores', 'mostrar_tallas')
+    list_display = ('id', 'nombre', 'descripcion', 'precio', 'stock_total',  'mostrar_colores', 'mostrar_tallas')
     search_fields = ('id', 'nombre', 'descripcion', 'precio', 'stock_total', 'marca')
     list_filter = ('marca', 'colores', 'tallas')
+    inlines = [ProductoImagenInline]  # Inline para agregar imágenes al producto
+    
     #filter_horizontal = ('colores', 'tallas')
     
     readonly_fields = ('stock_total',)
@@ -64,6 +70,14 @@ class ProductoTallaColorAdmin(admin.ModelAdmin):
     
     mostrar_colores.short_description = 'Colores'
 
+class ItemCarritoInline(admin.TabularInline):
+    model = ItemCarrito
+    extra = 1
+
+class CarritoAdmin(admin.ModelAdmin):
+    list_display = ('id', 'cliente', 'creado', 'actualizado', 'total')
+    inlines = [ItemCarritoInline]
+
 class PedidoAdmin(admin.ModelAdmin):
     list_display = ('id', 'cliente', 'fecha_pedido', 'estado')
     search_fields = ('id', 'cliente', 'fecha_pedido', 'estado')
@@ -96,6 +110,7 @@ admin.site.register(Producto, ProductoAdmin)
 admin.site.register(Talla, TallaAdmin)
 admin.site.register(Color, ColorAdmin)  # Registro de Color
 admin.site.register(ProductoTallaColor, ProductoTallaColorAdmin)  # Registro de ProductoTallaColor
+admin.site.register(Carrito, CarritoAdmin)
 admin.site.register(Pedido, PedidoAdmin)
 admin.site.register(DetallePedido, DetallePedidoAdmin)
 admin.site.register(Pago, PagoAdmin)
