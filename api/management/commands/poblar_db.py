@@ -31,7 +31,13 @@ class Command(BaseCommand):
             cat = Categoria.objects.create(nombre=nombre, descripcion="")
             categorias.append(cat)
 
-        # Marcas y productos reales asociados (solo las que pediste)
+        # Colores
+        colores_nombres = ["Negro", "Blanco", "Rojo", "Azul", "Gris", "Verde"]
+        colores = []
+        for nombre in colores_nombres:
+            colores.append(Color.objects.create(nombre=nombre))
+
+        # Marcas y productos reales asociados
         marcas_productos = {
             "Nike": [
                 "Nike Air Max", "Nike Air Force 1", "Nike Cortez", "Nike Blazer", "Nike Dunk Low"
@@ -87,7 +93,7 @@ class Command(BaseCommand):
                     nombre=modelo,
                     descripcion="",
                     precio=round(random.uniform(800, 3000), 2),
-                    stock=random.randint(10, 100),
+                    stock_total=random.randint(10, 100),
                     marca=marcas[marca_nombre]
                 )
                 productos.append(prod)
@@ -100,10 +106,13 @@ class Command(BaseCommand):
 
         # TallaProducto (relaciona productos con tallas)
         for producto in productos:
-            tp = ProductoTallaColor.objects.create(
-                producto=producto,
-                stock=random.randint(5, 30)
-            )
-            tp.tallas.set(random.sample(tallas, k=random.randint(3, 6)))
+            for talla in random.sample(tallas, k=random.randint(3, 6)):
+                color = random.choice(colores)
+                ProductoTallaColor.objects.create(
+                    producto=producto,
+                    color=color,
+                    talla=talla,
+                    stock=random.randint(5, 30)
+                )
 
         self.stdout.write(self.style.SUCCESS('¡Base de datos poblada mi lidel!'))
