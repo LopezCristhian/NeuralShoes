@@ -40,7 +40,7 @@ class ColorSerializer(serializers.ModelSerializer):
 class ProductoImagenSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductoImagen
-        fields = ['id', 'imagen']
+        fields = '__all__'
 
 class ProductoSerializer(serializers.ModelSerializer):
     imagenes = ProductoImagenSerializer(many=True, read_only=True)  # Relación para las imágenes
@@ -73,9 +73,9 @@ class ProductoTallaColorSerializer(serializers.ModelSerializer):
     queryset=Producto.objects.all(), source='producto', write_only=True
     )
     
-    tallas_ids = serializers.ListField(
-        child=serializers.PrimaryKeyRelatedField(queryset=Talla.objects.all()), source='talla', write_only=True
-    )  # Relación para asociar tallas por ID
+    tallas_ids = serializers.PrimaryKeyRelatedField(
+        queryset=Talla.objects.all(), source='talla', write_only=True
+        ) # Relación para asociar tallas por ID
     
     color_id = serializers.PrimaryKeyRelatedField(
         queryset=Color.objects.all(), source='color', write_only=True
@@ -118,6 +118,17 @@ class ProductoTallaColorCreateSerializer(serializers.Serializer):
     talla_id = serializers.UUIDField()  # ID de la talla
     color_id = serializers.UUIDField()  # ID del color
     stock = serializers.IntegerField()  # Stock de la variación   
+
+class ItemCarritoCreateSerializer(serializers.Serializer):
+    carrito_id = serializers.UUIDField()  # ID del carrito
+    variacion_id = serializers.UUIDField()  # ID de la variación de producto (talla y color)
+    cantidad = serializers.IntegerField()  # Cantidad del producto
+
+    def validate(self, data):
+        producto_talla_color = ProductoTallaColor.objects.get(id=data['variacion_id'])  # Obtener la variación del producto
+        if producto_talla_color.stock < data['cantidad']:  # Validar si hay suficiente stock
+            raise serializers.ValidationError("Stock insuficiente para esta talla y color")
+        return data
     
 class ItemCarritoSerializer(serializers.ModelSerializer):
     variacion = ProductoTallaColorSerializer(read_only=True)
@@ -125,7 +136,7 @@ class ItemCarritoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ItemCarrito
-        fields = ['id', 'variacion', 'cantidad', 'subtotal']
+        fields = '__all__'
 
     def get_subtotal(self, obj):
         return obj.cantidad * obj.variacion.precio
