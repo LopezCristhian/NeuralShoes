@@ -117,10 +117,7 @@ class ClienteViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
 
-<<<<<<< HEAD
-=======
 # @method_decorator(keycloak_protected, name='dispatch')
->>>>>>> 7f46d6ba8b2c4bbde56f27250f2e9ba62952343b
 class CategoriaViewSet(viewsets.ModelViewSet):
     """
     API endpoints para gestionar categorias
@@ -181,10 +178,7 @@ class CategoriaViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
 
-<<<<<<< HEAD
-=======
 # @method_decorator(keycloak_protected, name='dispatch')
->>>>>>> 7f46d6ba8b2c4bbde56f27250f2e9ba62952343b
 class MarcaViewSet(viewsets.ModelViewSet):
     """
     API endpoints para gestionar marcas
@@ -244,8 +238,6 @@ class MarcaViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
 
-<<<<<<< HEAD
-=======
 # @method_decorator(keycloak_protected, name='dispatch')
 class ProductoViewSet(viewsets.ModelViewSet):
     """
@@ -346,7 +338,6 @@ class ProductoViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 @method_decorator(keycloak_protected, name='dispatch')
->>>>>>> 7f46d6ba8b2c4bbde56f27250f2e9ba62952343b
 class TallaViewSet(viewsets.ModelViewSet):
     """
     API endpoints para gestionar tallas
@@ -404,6 +395,9 @@ class TallaViewSet(viewsets.ModelViewSet):
     
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
+    
+    
+    
 
 class ColorViewSet(viewsets.ModelViewSet):
     """
@@ -938,3 +932,15 @@ class PagoViewSet(viewsets.ModelViewSet):
         
         serializer = self.get_serializer(pagos, many=True)
         return Response(serializer.data)
+    
+
+@api_view(['GET'])
+def imagenes_marcas(request):
+    data = [
+        {
+            "nombre": marca.nombre,
+            "imagen_url": request.build_absolute_uri(marca.imagen.url) if marca.imagen else None
+        }
+        for marca in Marca.objects.all()
+    ]
+    return Response(data)

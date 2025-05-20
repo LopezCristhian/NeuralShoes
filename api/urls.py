@@ -1,6 +1,6 @@
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
-from .views import allInfo
+from .views import allInfo 
 
 from .views import (
     ClienteViewSet, 
@@ -31,4 +31,5 @@ router.register(r'pagos', PagoViewSet)
 urlpatterns = [
     path('', include(router.urls)),
     path('all/', allInfo, name='allInfo' ),
+
 ]
