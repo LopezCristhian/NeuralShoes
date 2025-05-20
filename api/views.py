@@ -1103,55 +1103,9 @@ def imagenes_marcas(request):
     ]
     return Response(data)
 
-@api_view(['GET'])
 class ProductoImagenViewSet(viewsets.ModelViewSet):
     """
     API endpoints para gestionar imágenes de productos
     """
     queryset = ProductoImagen.objects.all()
     serializer_class = ProductoImagenSerializer
-    
-    @swagger_auto_schema(
-        operation_description="Lista todas las imágenes de productos",
-        responses={200: ProductoImagenSerializer(many=True)}
-    )
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
-    
-    @swagger_auto_schema(
-        operation_description="Crea una nueva imagen de producto",
-        request_body=ProductoImagenSerializer,
-        responses={201: ProductoImagenSerializer()}
-    )
-    def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
-    
-    @swagger_auto_schema(
-        operation_description="Obtiene detalles de una imagen de producto específica",
-        responses={200: ProductoImagenSerializer()}
-    )
-    def retrieve(self, request, *args, **kwargs):
-        return super().retrieve(request, *args, **kwargs)
-    
-    @swagger_auto_schema(
-        operation_description="Actualiza una imagen de producto existente",
-        request_body=ProductoImagenSerializer,
-        responses={200: ProductoImagenSerializer()}
-    )
-    def update(self, request, *args, **kwargs):
-        return super().update(request, *args, **kwargs)
-    
-    @swagger_auto_schema(
-        operation_description="Actualiza parcialmente una imagen de producto existente",
-        request_body=ProductoImagenSerializer,
-        responses={200: ProductoImagenSerializer()}
-    )
-    def partial_update(self, request, *args, **kwargs):
-        return super().partial_update(request, *args, **kwargs)
-    
-    @swagger_auto_schema(
-        operation_description="Elimina una imagen de producto",
-        responses={204: "No Content"}
-    )
-    def destroy(self, request, *args, **kwargs):
-        return super().destroy(request, *args, **kwargs)

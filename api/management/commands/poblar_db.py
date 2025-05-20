@@ -122,7 +122,7 @@ class Command(BaseCommand):
                 prod = Producto.objects.create(
                     nombre=modelo,
                     descripcion="",
-                    precio=round(random.uniform(800, 3000), 2),
+                    precio=round(random.uniform(80000, 400000), 2), 
                     stock_total=random.randint(10, 100),
                     marca=marcas[marca_nombre]
                 )
