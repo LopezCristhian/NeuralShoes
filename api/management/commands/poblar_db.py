@@ -35,12 +35,6 @@ class Command(BaseCommand):
             cat = Categoria.objects.create(nombre=nombre, descripcion="")
             categorias.append(cat)
 
-        # Colores
-        colores_nombres = ["Negro", "Blanco", "Rojo", "Azul", "Gris", "Verde"]
-        colores = []
-        for nombre in colores_nombres:
-            colores.append(Color.objects.create(nombre=nombre))
-
         # Marcas y productos reales asociados
         marcas_productos = {
             "Nike": [
