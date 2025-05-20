@@ -27,7 +27,7 @@ schema_view = get_schema_view(
    openapi.Info(
       title="NEURALSHOES API",
       default_version='v1',
-      description="API para la tienda de zapatos NEURALSHOES",
+      description="API  tienda de calzado NEURALSHOES",
       terms_of_service="https://www.google.com/policies/terms/",
       contact=openapi.Contact(email="contact@neuralshoes.local"),
       license=openapi.License(name="BSD License"),

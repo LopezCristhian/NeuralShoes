@@ -1,5 +1,5 @@
+from api.models import Cliente, Categoria, Marca, Talla, Color, Producto, ProductoTallaColor, Pedido, DetallePedido, Pago
 from django.core.management.base import BaseCommand
-from api.models import Cliente, Categoria, Marca, Producto, Talla, Color, ProductoTallaColor
 from faker import Faker
 import random
 import os
@@ -14,13 +14,16 @@ class Command(BaseCommand):
         fake = Faker('es_MX')
 
         # --- ELIMINAR TODOS LOS DATOS ---
-        ProductoTallaColor.objects.all().delete()
-        Producto.objects.all().delete()
-        Marca.objects.all().delete()
+        Cliente.objects.all().delete()
         Categoria.objects.all().delete()
+        Marca.objects.all().delete()
         Talla.objects.all().delete()
         Color.objects.all().delete()
-        Cliente.objects.all().delete()
+        Producto.objects.all().delete()
+        ProductoTallaColor.objects.all().delete()
+        Pedido.objects.all().delete()
+        DetallePedido.objects.all().delete()
+        Pago.objects.all().delete()
         # --- FIN BLOQUE ELIMINAR ---
 
         # Categorías
@@ -31,6 +34,12 @@ class Command(BaseCommand):
         for nombre in categorias_nombres:
             cat = Categoria.objects.create(nombre=nombre, descripcion="")
             categorias.append(cat)
+
+        # Colores
+        colores_nombres = ["Negro", "Blanco", "Rojo", "Azul", "Gris", "Verde"]
+        colores = []
+        for nombre in colores_nombres:
+            colores.append(Color.objects.create(nombre=nombre))
 
         # Marcas y productos reales asociados
         marcas_productos = {
@@ -120,6 +129,7 @@ class Command(BaseCommand):
                     nombre=modelo,
                     descripcion="",
                     precio=round(random.uniform(800, 3000), 2),
+                    stock_total=random.randint(10, 100),
                     marca=marcas[marca_nombre]
                 )
                 productos.append(prod)
@@ -132,15 +142,13 @@ class Command(BaseCommand):
 
         # ProductoTallaColor (relaciona productos con tallas y colores)
         for producto in productos:
-            tallas_producto = random.sample(tallas, k=random.randint(3, 6))
-            colores_producto = random.sample(colores, k=random.randint(2, 4))
-            for talla in tallas_producto:
-                for color in colores_producto:
-                    ProductoTallaColor.objects.create(
-                        producto=producto,
-                        talla=talla,
-                        color=color,
-                        stock=random.randint(5, 30)
-                    )
+            for talla in random.sample(tallas, k=random.randint(3, 6)):
+                color = random.choice(colores)
+                ProductoTallaColor.objects.create(
+                    producto=producto,
+                    color=color,
+                    talla=talla,
+                    stock=random.randint(5, 30)
+                )
 
-        self.stdout.write(self.style.SUCCESS('¡Base de datos poblada con imágenes webp de marcas!'))
+        self.stdout.write(self.style.SUCCESS('¡Base de datos poblada mi lidel!'))

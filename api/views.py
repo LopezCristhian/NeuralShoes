@@ -1,5 +1,6 @@
-from .models import Cliente, Categoria, Marca, Talla, Color, Producto, ProductoTallaColor, Pedido, DetallePedido, Pago
+from .models import Cliente, Categoria, Marca, Talla, Color, Producto, ProductoImagen, ProductoTallaColor, Carrito, ItemCarrito, Pedido, DetallePedido, Pago
 from rest_framework import viewsets
+#from rest_framework.permissions import IsAuthenticated
 
 from .serializers import (
     ClienteSerializer, 
@@ -8,9 +9,12 @@ from .serializers import (
     TallaSerializer, 
     ColorSerializer, 
     ProductoSerializer, 
+    ProductoImagenSerializer,
     ProductoTallaColorSerializer, 
     ProductoTallaColorCreateSerializer,
     PedidoSerializer, 
+    CarritoSerializer,
+    ItemCarritoSerializer,
     PedidoCreateSerializer, 
     DetallePedidoSerializer, 
     DetallePedidoCreateSerializer, 
@@ -29,6 +33,11 @@ from django.http import JsonResponse
 from .auth import keycloak_protected
 from rest_framework import status
 from drf_yasg import openapi
+
+
+from .models import agregar_o_actualizar_item, eliminar_item_del_carrito, convertir_carrito_a_pedido
+from django.core.exceptions import ValidationError
+from django.shortcuts import get_object_or_404
 
 from rest_framework import viewsets
 from django.conf import settings
@@ -49,7 +58,10 @@ def allInfo(request):
         "tallas": TallaSerializer(Talla.objects.all(), many=True).data,
         "colores": ColorSerializer(Color.objects.all(), many=True).data,
         "productos": ProductoSerializer(Producto.objects.all(), many=True).data,
+        "producto_imagenes": ProductoImagenSerializer(ProductoImagen.objects.all(), many=True).data,
         "productos_talla_color": ProductoTallaColorSerializer(ProductoTallaColor.objects.all(), many=True).data,
+        "carritos": CarritoSerializer(Carrito.objects.all(), many=True).data,
+        "carrito_items": ItemCarritoSerializer(ItemCarrito.objects.all(), many=True).data,
         "pedidos": PedidoSerializer(Pedido.objects.all(), many=True).data,
         "detalles_pedido": DetallePedidoSerializer(DetallePedido.objects.all(), many=True).data,
         "pagos": PagoSerializer(Pago.objects.all(), many=True).data
@@ -337,7 +349,7 @@ class ProductoViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(productos, many=True)
         return Response(serializer.data)
 
-@method_decorator(keycloak_protected, name='dispatch')
+# @method_decorator(keycloak_protected, name='dispatch')
 class TallaViewSet(viewsets.ModelViewSet):
     """
     API endpoints para gestionar tallas
@@ -569,6 +581,174 @@ class ProductoTallaColorViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
 
+class CarritoViewSet(viewsets.ModelViewSet):
+    queryset = Carrito.objects.all()
+    serializer_class = CarritoSerializer
+
+    @swagger_auto_schema(
+        operation_description="Agrega un producto (variación) al carrito.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=["variacion_id", "cantidad"],
+            properties={
+                "variacion_id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                "cantidad": openapi.Schema(type=openapi.TYPE_INTEGER)
+            },
+        ),
+        responses={200: ItemCarritoSerializer()}
+    )
+    @action(detail=True, methods=['post'], url_path='agregar-item')
+    def agregar_item(self, request, pk=None):
+        carrito = self.get_object()
+        variacion_id = request.data.get('variacion_id')
+        cantidad = request.data.get('cantidad', 1)
+
+        if not variacion_id:
+            return Response({'error': 'variacion_id es requerido'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            variacion = ProductoTallaColor.objects.get(id=variacion_id)
+        except ProductoTallaColor.DoesNotExist:
+            return Response({'error': 'ProductoTallaColor no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+
+        item, creado = ItemCarrito.objects.get_or_create(carrito=carrito, variacion=variacion)
+        if not creado:
+            item.cantidad += int(cantidad)
+        else:
+            item.cantidad = int(cantidad)
+        item.save()
+
+        return Response(ItemCarritoSerializer(item).data, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        operation_description="Actualiza la cantidad de un producto en el carrito.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=["item_id", "cantidad"],
+            properties={
+                "item_id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                "cantidad": openapi.Schema(type=openapi.TYPE_INTEGER)
+            },
+        ),
+        responses={200: ItemCarritoSerializer()}
+    )
+    @action(detail=True, methods=['post'], url_path='actualizar-item')
+    def actualizar_item(self, request, pk=None):
+        carrito = self.get_object()
+        item_id = request.data.get('item_id')
+        cantidad = request.data.get('cantidad')
+
+        if not item_id or not cantidad:
+            return Response({'error': 'item_id y cantidad son requeridos'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            item = ItemCarrito.objects.get(id=item_id, carrito=carrito)
+        except ItemCarrito.DoesNotExist:
+            return Response({'error': 'Item no encontrado en este carrito'}, status=status.HTTP_404_NOT_FOUND)
+
+        item.cantidad = int(cantidad)
+        item.save()
+        return Response(ItemCarritoSerializer(item).data, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        operation_description="Elimina un item del carrito.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=["item_id"],
+            properties={
+                "item_id": openapi.Schema(type=openapi.TYPE_INTEGER),
+            },
+        ),
+        responses={204: 'Item eliminado correctamente'}
+    )
+    @action(detail=True, methods=['post'], url_path='eliminar-item')
+    def eliminar_item(self, request, pk=None):
+        carrito = self.get_object()
+        item_id = request.data.get('item_id')
+
+        if not item_id:
+            return Response({'error': 'item_id es requerido'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            item = ItemCarrito.objects.get(id=item_id, carrito=carrito)
+        except ItemCarrito.DoesNotExist:
+            return Response({'error': 'Item no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+
+        item.delete()
+        return Response({'mensaje': 'Item eliminado'}, status=status.HTTP_204_NO_CONTENT)
+
+class CarritoPagarViewSet(viewsets.ModelViewSet):
+    queryset = Carrito.objects.all()
+    serializer_class = CarritoSerializer
+
+    @action(detail=True, methods=['post'], url_path='pagar')
+    def pagar_carrito(self, request, pk=None):
+        carrito = self.get_object()
+
+        if carrito.items.count() == 0:
+            return Response({"error": "El carrito está vacío"}, status=status.HTTP_400_BAD_REQUEST)
+
+        pedido = Pedido.objects.create(
+            usuario=carrito.usuario,
+            fecha_pedido=timezone.now(),
+            estado="pendiente"
+        )
+
+        for item in carrito.items.all():
+            DetallePedido.objects.create(
+                pedido=pedido,
+                variacion=item.variacion,
+                cantidad=item.cantidad,
+                precio_unitario=item.variacion.precio
+            )
+            item.variacion.stock -= item.cantidad
+            item.variacion.save()
+
+        carrito.delete()  # O puedes marcarlo como inactivo
+
+        return Response({"mensaje": f"Pedido {pedido.id} creado con éxito"}, status=status.HTTP_201_CREATED)
+
+class ItemCarritoViewSet(viewsets.ModelViewSet):
+    queryset = ItemCarrito.objects.all()
+    serializer_class = ItemCarritoSerializer
+
+    @swagger_auto_schema(
+        operation_description="Listar todos los items de carrito",
+        responses={200: ItemCarritoSerializer(many=True)}
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+    
+    @swagger_auto_schema(
+        operation_description="Obtiene detalles de un item de carrito específico",
+        responses={200: ItemCarritoSerializer()}
+    )
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+    
+    @swagger_auto_schema(
+        operation_description="Actualiza un item de carrito existente",
+        request_body=ItemCarritoSerializer,
+        responses={200: ItemCarritoSerializer()}
+    )
+    def update(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
+    
+    @swagger_auto_schema(
+        operation_description="Actualiza parcialmente un item de carrito existente",
+        request_body=ItemCarritoSerializer,
+        responses={200: ItemCarritoSerializer()}
+    )
+    def partial_update(self, request, *args, **kwargs):
+        return super().partial_update(request, *args, **kwargs)
+    
+    @swagger_auto_schema(
+        operation_description="Elimina un item de carrito",
+        responses={204: "No Content"}
+    )
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)    
+    
 #@method_decorator(keycloak_protected, name='dispatch')
 class PedidoViewSet(viewsets.ModelViewSet):
     """
@@ -672,29 +852,7 @@ class PedidoViewSet(viewsets.ModelViewSet):
     )
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
-    
-    # @swagger_auto_schema(
-    #     operation_description="Filtra pedidos por cliente",
-    #     manual_parameters=[
-    #         openapi.Parameter(
-    #             'cliente', 
-    #             openapi.IN_QUERY,
-    #             description="ID del cliente", 
-    #             type=openapi.TYPE_INTEGER
-    #         )
-    #     ],
-    #     responses={200: PedidoSerializer(many=True)}
-    # )
-    # @action(detail=False, methods=['get'])
-    # def por_cliente(self, request):
-    #     cliente_id = request.query_params.get('cliente')
-    #     if cliente_id:
-    #         pedidos = self.queryset.filter(cliente_id=cliente_id)
-    #     else:
-    #         pedidos = self.queryset.all()
-        
-    #     serializer = self.get_serializer(pedidos, many=True)
-    #     return Response(serializer.data)
+
 #@method_decorator(keycloak_protected, name='dispatch')
 class DetallePedidoViewSet(viewsets.ModelViewSet):
     """
@@ -944,3 +1102,56 @@ def imagenes_marcas(request):
         for marca in Marca.objects.all()
     ]
     return Response(data)
+
+@api_view(['GET'])
+class ProductoImagenViewSet(viewsets.ModelViewSet):
+    """
+    API endpoints para gestionar imágenes de productos
+    """
+    queryset = ProductoImagen.objects.all()
+    serializer_class = ProductoImagenSerializer
+    
+    @swagger_auto_schema(
+        operation_description="Lista todas las imágenes de productos",
+        responses={200: ProductoImagenSerializer(many=True)}
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+    
+    @swagger_auto_schema(
+        operation_description="Crea una nueva imagen de producto",
+        request_body=ProductoImagenSerializer,
+        responses={201: ProductoImagenSerializer()}
+    )
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+    
+    @swagger_auto_schema(
+        operation_description="Obtiene detalles de una imagen de producto específica",
+        responses={200: ProductoImagenSerializer()}
+    )
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+    
+    @swagger_auto_schema(
+        operation_description="Actualiza una imagen de producto existente",
+        request_body=ProductoImagenSerializer,
+        responses={200: ProductoImagenSerializer()}
+    )
+    def update(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
+    
+    @swagger_auto_schema(
+        operation_description="Actualiza parcialmente una imagen de producto existente",
+        request_body=ProductoImagenSerializer,
+        responses={200: ProductoImagenSerializer()}
+    )
+    def partial_update(self, request, *args, **kwargs):
+        return super().partial_update(request, *args, **kwargs)
+    
+    @swagger_auto_schema(
+        operation_description="Elimina una imagen de producto",
+        responses={204: "No Content"}
+    )
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
