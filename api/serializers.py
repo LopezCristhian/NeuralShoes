@@ -139,7 +139,7 @@ class ItemCarritoSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def get_subtotal(self, obj):
-        return obj.cantidad * obj.variacion.precio
+        return obj.variacion.producto.precio * obj.cantidad
 
 class CarritoSerializer(serializers.ModelSerializer):
     items = ItemCarritoSerializer(many=True, read_only=True)
@@ -150,7 +150,7 @@ class CarritoSerializer(serializers.ModelSerializer):
         fields = ['id', 'cliente', 'actualizado', 'items', 'total']
 
     def get_total(self, obj):
-        return sum([item.cantidad * item.variacion.precio for item in obj.items.all()])
+        return sum([item.cantidad * item.variacion.producto.precio for item in obj.items.all()])
 
 class PedidoSerializer(serializers.ModelSerializer):
     cliente = ClienteSerializer(read_only=True)  # Mostrar datos del cliente

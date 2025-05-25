@@ -61,13 +61,23 @@ MIDDLEWARE = [
 CORS_ALLOW_ALL_ORIGINS = True
 
 # Configuración de Keycloak
-KEYCLOAK_SERVER_URL = 'http://keycloak:8080/'  # Usa el nombre del servicio interno
+KEYCLOAK_SERVER_URL = 'http://localhost:8080/' #'http://keycloak:8080/'  # Usa el nombre del servicio interno
 KEYCLOAK_REALM = 'neuralshoes'
 KEYCLOAK_CLIENT_ID = 'django-api'
-KEYCLOAK_CLIENT_SECRET = 'WoRv5lAjAYvwOwarMpTHFOeul1k68wYo'  # El que copiaste de la pestaña Credentials
+KEYCLOAK_CLIENT_SECRET = 'nD0pHBoKKxtJS0kWf284jhAcl9uHKm2M'  # El que copiaste de la pestaña Credentials
 
 # Opcional: para acceso público a tu API desde fuera de Docker
 KEYCLOAK_PUBLIC_SERVER_URL = 'http://localhost:8080/'  # URL para clientes externos
+
+KEYCLOAK_CONFIG = {
+    'SERVER_URL': KEYCLOAK_SERVER_URL,
+    'REALM': KEYCLOAK_REALM,
+    'CLIENT_ID': KEYCLOAK_CLIENT_ID,
+    'CLIENT_SECRET': KEYCLOAK_CLIENT_SECRET,
+    'PUBLIC_SERVER_URL': KEYCLOAK_PUBLIC_SERVER_URL,    
+    'PUBLIC_REALM': KEYCLOAK_PUBLIC_SERVER_URL,
+    
+}
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend', 

@@ -21,7 +21,7 @@ def keycloak_protected(view_func):
                 data={'token': token, 'client_id': settings.KEYCLOAK_CLIENT_ID, 'client_secret': settings.KEYCLOAK_CLIENT_SECRET}
             )
             
-            if response.status_code != 200:# or not response.json().get('active', False):
+            if response.status_code != 200 or not response.json().get('active', False):
 
                 return JsonResponse({'error': 'Token inválido o expirado'}, status=401)
                 #return JsonResponse({'debug': response.json()}, status=200)

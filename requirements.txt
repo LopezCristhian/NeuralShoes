@@ -20,3 +20,8 @@ requests==2.31.0
 django-keycloak-auth==1.0.0
 python-jose==3.4.0
 #djangorestframework-keycloak
+
+redis
+jwt
+django-redis
+keycloak
