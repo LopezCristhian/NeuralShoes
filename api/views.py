@@ -50,7 +50,7 @@ import requests
 
 # API View para obtener toda la información
 @swagger_auto_schema(method='get', operation_description="Obtener toda la información de productos, tallas, pedidos, etc.")
-@keycloak_protected
+#@keycloak_protected
 @api_view(['GET'])
 def allInfo(request):
     data = {
