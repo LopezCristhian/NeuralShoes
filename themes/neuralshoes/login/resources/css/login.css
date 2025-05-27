@@ -1,629 +1,274 @@
-/* Patternfly CSS places a "bg-login.jpg" as the background on this ".login-pf" class.
-   This clashes with the "keycloak-bg.png' background defined on the body below.
-   Therefore the Patternfly background must be set to none. */
-.login-pf {
-    background: none;
-}
+/* --- NeuralShoes Keycloak Edition --- */
 
+/* Fondo principal con imagen y degradado */
 .login-pf body {
-    background: url("../img/shoes.jpeg") no-repeat center center fixed;
+    background: #111;
+    background-image: url("../img/shoes.jpg");
     background-size: cover;
-    height: 100%;
+    background-position: center;
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
 }
 
-textarea.pf-c-form-control {
-	height: auto;
-}
-
-.pf-c-alert__title {
-    font-size: var(--pf-global--FontSize--xs);
-}
-
-p.instruction {
-    margin: 5px 0;
-}
-
-.pf-c-button.pf-m-control {
-    border-color: rgba(230, 230, 230, 0.5);
-}
-
-h1#kc-page-title {
-    margin-top: 10px;
-}
-
-#kc-locale ul {
-    background-color: var(--pf-global--BackgroundColor--100);
-    display: none;
-    top: 20px;
-    min-width: 100px;
-    padding: 0;
-}
-
-#kc-locale-dropdown{
-    display: inline-block;
-}
-
-#kc-locale-dropdown:hover ul {
-    display:block;
-}
-
-#kc-locale-dropdown a {
-    color: var(--pf-global--Color--200);
-    text-align: right;
-    font-size: var(--pf-global--FontSize--sm);
-}
-
-#kc-locale-dropdown button {
-    background: none;
-    border: none;
-    padding: 0;
-    cursor: pointer;
-    color: var(--pf-global--Color--200);
-    text-align: right;
-    font-size: var(--pf-global--FontSize--sm);
-}
-
-button#kc-current-locale-link::after {
-    content: "\2c5";
-    margin-left: var(--pf-global--spacer--xs)
-}
-
-.login-pf .container {
-    padding-top: 40px;
-}
-
-.login-pf a:hover {
-    color: #0099d3;
-}
-
-#kc-logo {
-    width: 100%;
-}
-
-div.kc-logo-text {
-    background-image: url(../img/keycloak-logo-text.png);
-    background-repeat: no-repeat;
-    height: 63px;
-    width: 300px;
-    margin: 0 auto;
-}
-
-div.kc-logo-text span {
-    display: none;
-}
-
-#kc-header {
-    color: #ededed;
-    overflow: visible;
-    white-space: nowrap;
-}
-
-#kc-header-wrapper {
-    font-size: 29px;
-    text-transform: uppercase;
-    letter-spacing: 3px;
-    line-height: 1.2em;
-    padding: 62px 10px 20px;
-    white-space: normal;
-}
-
-#kc-content {
-    width: 100%;
-}
-
-#kc-attempted-username {
-    font-size: 20px;
-    font-family: inherit;
-    font-weight: normal;
-    padding-right: 10px;
-}
-
-#kc-username {
-    text-align: center;
-    margin-bottom:-10px;
-}
-
-#kc-webauthn-settings-form {
-    padding-top: 8px;
-}
-
-#kc-form-webauthn .select-auth-box-parent {
+/* Overlay con degradado rojo diagonal */
+.login-pf body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
     pointer-events: none;
 }
 
-#kc-form-webauthn .select-auth-box-desc {
-    color: var(--pf-global--palette--black-600);
+/* Tarjeta de login glassmorphism */
+.card-pf {
+    background: rgba(20, 20, 20, 0.92);
+    border-radius: 22px;
+    box-shadow: 0 8px 32px rgba(255,0,54,0.18), 0 2px 8px rgba(0,0,0,0.22);
+    border: 2px solid #ff0036;
+    padding: 48px 36px 32px 36px;
+    max-width: 420px;
+    margin: 80px auto 32px auto;
+    position: relative;
+    overflow: hidden;
+    animation: fadeInUp 0.7s cubic-bezier(.39,.575,.565,1) both;
+    z-index: 1;
+    backdrop-filter: blur(6px);
 }
 
-#kc-form-webauthn .select-auth-box-headline {
-    color: var(--pf-global--Color--300);
+/* Animación de entrada */
+@keyframes fadeInUp {
+    0% { opacity: 0; transform: translateY(40px);}
+    100% { opacity: 1; transform: translateY(0);}
 }
 
-#kc-form-webauthn .select-auth-box-icon {
-    flex: 0 0 3em;
+/* Títulos */
+.card-pf h1, .card-pf h2 {
+    font-family: 'Roboto', 'OpenSauceOne', sans-serif;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.5rem;
+    text-align: center;
+    letter-spacing: 2px;
+    text-shadow: 0 2px 8px #0008;
+}
+.card-pf h1 span {
+    color: #ff0036;
+    letter-spacing: 3px;
+}
+.card-pf p {
+    color: #e0e0e0;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-size: 1.05rem;
 }
 
-#kc-form-webauthn .select-auth-box-icon-properties {
-    margin-top: 10px;
-    font-size: 1.8em;
+/* Inputs */
+#kc-form-login input[type="text"],
+#kc-form-login input[type="password"],
+#kc-form-login input[type="email"],
+#kc-form-login input[type="number"] {
+    border: none;
+    border-bottom: 2px solid #444;
+    border-radius: 0;
+    background: transparent;
+    outline: none;
+    box-shadow: none;
+    font-size: 17px;
+    padding: 12px 0 8px 0;
+    width: 100%;
+    color: #fff;
+    transition: border-color 0.2s, background 0.2s;
 }
 
-#kc-form-webauthn .select-auth-box-icon-properties.unknown-transport-class {
-    margin-top: 3px;
+#kc-form-login input[type="text"]:focus,
+#kc-form-login input[type="password"]:focus,
+#kc-form-login input[type="email"]:focus,
+#kc-form-login input[type="number"]:focus {
+    border-bottom: 2px solid #ff0036;
+    background: rgba(255,0,54,0.06);
+    color: #fff;
 }
 
-#kc-form-webauthn .pf-l-stack__item {
-    margin: -1px 0;
+#kc-form-login label {
+    color: #ff0036;
+    font-weight: 500;
+    font-size: 15px;
+    margin-bottom: 2px;
+    transition: color 0.2s;
+    letter-spacing: 1px;
 }
 
-#kc-content-wrapper {
-    margin-top: 20px;
-}
-
-#kc-form-wrapper {
-    margin-top: 10px;
-}
-
-#kc-info {
-    margin: 20px -40px -30px;
-}
-
-#kc-info-wrapper {
-    font-size: 13px;
-    padding: 15px 35px;
-    background-color: #F0F0F0;
-}
-
-#kc-form-options span {
-    display: block;
-}
-
-#kc-form-options .checkbox {
-    margin-top: 0;
-    color: #72767b;
-}
-
-#kc-terms-text {
-    margin-bottom: 20px;
-}
-
-#kc-registration-terms-text {
-    max-height: 100px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    margin: 5px;
-}
-
-#kc-registration {
-    margin-bottom: 0;
-}
-
-/* TOTP */
-
-.subtitle {
-    text-align: right;
-    margin-top: 30px;
-    color: #909090;
-}
-
-.required {
-    color: var(--pf-global--danger-color--200);
-}
-
-ol#kc-totp-settings {
-    margin: 0;
-    padding-left: 20px;
-}
-
-ul#kc-totp-supported-apps {
-    margin-bottom: 10px;
-}
-
-#kc-totp-secret-qr-code {
-    max-width:150px;
-    max-height:150px;
-}
-
-#kc-totp-secret-key {
-    background-color: #fff;
-    color: #333333;
+/* Botón principal */
+input[type="submit"].kcButtonClass, 
+.kcButtonClass, 
+button.kcButtonClass, 
+a.kcButtonClass {
+    background: linear-gradient(90deg, #ff0036 0%, #111 100%);
+    color: #fff !important;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(255,0,54,0.13);
+    padding: 14px 0;
     font-size: 16px;
-    padding: 10px 0;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: background 0.3s, box-shadow 0.3s;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
 }
 
-/* OAuth */
-
-#kc-oauth h3 {
-    margin-top: 0;
+input[type="submit"].kcButtonClass:hover, 
+.kcButtonClass:hover, 
+button.kcButtonClass:hover, 
+a.kcButtonClass:hover {
+    background: linear-gradient(90deg, #111 0%, #ff0036 100%);
+    box-shadow: 0 8px 32px rgba(255,0,54,0.25);
 }
 
-#kc-oauth ul {
-    list-style: none;
+/* Botón secundario */
+a.kcButtonSecondaryClass {
+    background: transparent;
+    color: #ff0036 !important;
+    border: 2px solid #ff0036;
+    border-radius: 8px;
+    margin-top: 12px;
+    transition: background 0.2s, color 0.2s;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+a.kcButtonSecondaryClass:hover {
+    background: #ff0036;
+    color: #fff !important;
+}
+
+/* Checkbox */
+#kc-form-login .checkbox label {
+    color: #bbb;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+}
+
+#kc-form-login .checkbox input[type="checkbox"] {
+    accent-color: #ff0036;
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+}
+
+/* Mensajes de error */
+#kc-form-login #input-error,
+#kc-form-login .kcInputErrorMessageClass {
+    color: #ff0036;
+    font-size: 13px;
+    margin-top: 4px;
+    font-weight: 500;
+}
+
+/* Botón de visibilidad de contraseña */
+button[aria-label="Mostrar contraseña"], button[aria-label="showPassword"] {
+    background: none;
+    border: none;
+    color: #ff0036;
+    cursor: pointer;
+    padding: 0 8px;
+    font-size: 18px;
+    transition: color 0.2s;
+}
+
+button[aria-label="Mostrar contraseña"]:hover, button[aria-label="showPassword"]:hover {
+    color: #fff;
+}
+
+/* Contenedor de registro */
+#kc-registration-container {
+    margin-top: 24px;
+    text-align: center;
+}
+
+#kc-registration-container a {
+    display: inline-block;
+    min-width: 160px;
+    text-align: center;
+}
+
+/* Enlaces de opciones */
+#kc-form-options a {
+    color: #ff0036;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+#kc-form-options a:hover {
+    color: #fff;
+    text-decoration: underline;
+}
+
+/* Social login */
+#kc-social-providers {
+    margin-top: 32px;
+    background: rgba(30,30,30,0.97);
+    border-radius: 10px;
+    padding: 18px 0 8px 0;
+    box-shadow: 0 1px 4px rgba(255,0,54,0.09);
+}
+
+#kc-social-providers h2 {
+    color: #ff0036;
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    letter-spacing: 1px;
+}
+
+#kc-social-providers ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
     padding: 0;
     margin: 0;
 }
 
-#kc-oauth ul li {
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    font-size: 12px;
-    padding: 10px 0;
+#kc-social-providers li {
+    list-style: none;
 }
 
-#kc-oauth ul li:first-of-type {
-    border-top: 0;
-}
-
-#kc-oauth .kc-role {
-    display: inline-block;
-    width: 50%;
-}
-
-/* Code */
-#kc-code textarea {
-    width: 100%;
-    height: 8em;
-}
-
-/* Social */
-.kc-social-links {
-    margin-top: 20px;
-}
-
-.kc-social-links li {
-    width: 100%;
-}
-
-.kc-social-provider-logo {
-    font-size: 23px;
-    width: 30px;
-    height: 25px;
-    float: left;
-}
-
-.kc-social-gray {
-    color: var(--pf-global--Color--200);
-}
-
-.kc-social-gray h2 {
-    font-size: 1em;
-}
-
-.kc-social-item {
-    margin-bottom: var(--pf-global--spacer--sm);
+#kc-social-providers a {
+    background: #111;
+    border: 1.5px solid #ff0036;
+    color: #ff0036 !important;
+    border-radius: 6px;
+    padding: 8px 18px;
     font-size: 15px;
-    text-align: center;
-}
-
-.kc-social-provider-name {
-    position: relative;
-}
-
-.kc-social-icon-text {
-    left: -15px;
-}
-
-.kc-social-grid {
-    display:grid;
-    grid-column-gap: 10px;
-    grid-row-gap: 5px;
-    grid-column-end: span 6;
-    --pf-l-grid__item--GridColumnEnd: span 6;
-}
-
-.kc-social-grid .kc-social-icon-text {
-    left: -10px;
-}
-
-.kc-login-tooltip {
-    position: relative;
-    display: inline-block;
-}
-
-.kc-social-section {
-    text-align: center;
-}
-
-.kc-social-section hr{
-    margin-bottom: 10px
-}
-
-.kc-login-tooltip .kc-tooltip-text{
-    top:-3px;
-    left:160%;
-    background-color: black;
-    visibility: hidden;
-    color: #fff;
-
-    min-width:130px;
-    text-align: center;
-    border-radius: 2px;
-    box-shadow:0 1px 8px rgba(0,0,0,0.6);
-    padding: 5px;
-
-    position: absolute;
-    opacity:0;
-    transition:opacity 0.5s;
-}
-
-/* Show tooltip */
-.kc-login-tooltip:hover .kc-tooltip-text {
-    visibility: visible;
-    opacity:0.7;
-}
-
-/* Arrow for tooltip */
-.kc-login-tooltip .kc-tooltip-text::after {
-    content: " ";
-    position: absolute;
-    top: 15px;
-    right: 100%;
-    margin-top: -5px;
-    border-width: 5px;
-    border-style: solid;
-    border-color: transparent black transparent transparent;
-}
-
-@media (min-width: 768px) {
-    #kc-container-wrapper {
-        position: absolute;
-        width: 100%;
-    }
-
-    .login-pf .container {
-        padding-right: 80px;
-    }
-
-    #kc-locale {
-        position: relative;
-        text-align: right;
-        z-index: 9999;
-    }
-}
-
-@media (max-width: 767px) {
-
-    .login-pf body {
-        background: white;
-    }
-
-    #kc-header {
-        padding-left: 15px;
-        padding-right: 15px;
-        float: none;
-        text-align: left;
-    }
-
-    #kc-header-wrapper {
-        font-size: 16px;
-        font-weight: bold;
-        padding: 20px 60px 0 0;
-        color: #72767b;
-        letter-spacing: 0;
-    }
-
-    div.kc-logo-text {
-        margin: 0;
-        width: 150px;
-        height: 32px;
-        background-size: 100%;
-    }
-
-    #kc-form {
-        float: none;
-    }
-
-    #kc-info-wrapper {
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-        background-color: transparent;
-    }
-
-    .login-pf .container {
-        padding-top: 15px;
-        padding-bottom: 15px;
-    }
-
-    #kc-locale {
-        position: absolute;
-        width: 200px;
-        top: 20px;
-        right: 20px;
-        text-align: right;
-        z-index: 9999;
-    }
-}
-
-@media (min-height: 646px) {
-    #kc-container-wrapper {
-        bottom: 12%;
-    }
-}
-
-@media (max-height: 645px) {
-    #kc-container-wrapper {
-        padding-top: 50px;
-        top: 20%;
-    }
-}
-
-.card-pf form.form-actions .btn {
-    float: right;
-    margin-left: 10px;
-}
-
-#kc-form-buttons {
-    margin-top: 20px;
-}
-
-.login-pf-page .login-pf-brand {
-    margin-top: 20px;
-    max-width: 360px;
-    width: 40%;
-}
-
-.select-auth-box-arrow{
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s;
     display: flex;
     align-items: center;
-    margin-right: 2rem;
+    gap: 8px;
 }
 
-.select-auth-box-icon{
-    display: flex;
-    flex: 0 0 2em;
-    justify-content: center;
-    margin-right: 1rem;
-    margin-left: 3rem;
+#kc-social-providers a:hover {
+    background: #ff0036;
+    color: #fff !important;
 }
 
-.select-auth-box-parent{
-    border-top: 1px solid var(--pf-global--palette--black-200);
-    padding-top: 1rem;
-    padding-bottom: 1rem;
-    cursor: pointer;
-    text-align: left;
-    align-items: unset;
-    background-color: unset;
-    border-right: unset;
-    border-bottom: unset;
-    border-left: unset;
-}
-
-.select-auth-box-parent:hover{
-    background-color: #f7f8f8;
-}
-
-.select-auth-container {
-    padding-bottom: 0px !important;
-}
-
-.select-auth-box-headline {
-    font-size: var(--pf-global--FontSize--md);
-    color: var(--pf-global--primary-color--100);
-    font-weight: bold;
-}
-
-.select-auth-box-desc {
-    font-size: var(--pf-global--FontSize--sm);
-}
-
-.select-auth-box-paragraph {
-    text-align: center;
-    font-size: var(--pf-global--FontSize--md);
-    margin-bottom: 5px;
-}
-
-.card-pf {
-    margin: 0 auto;
-    box-shadow: var(--pf-global--BoxShadow--lg);
-    padding: 0 20px;
-    max-width: 500px;
-    border-top: 4px solid;
-    border-color: var(--pf-global--primary-color--100);
-}
-
-/*phone*/
-@media (max-width: 767px) {
-    .login-pf-page .card-pf {
-        max-width: none;
-        margin-left: 0;
-        margin-right: 0;
-        padding-top: 0;
-        border-top: 0;
-        box-shadow: 0 0;
+/* Responsive */
+@media (max-width: 600px) {
+    .card-pf {
+        padding: 16px 4px 12px 4px;
+        max-width: 98vw;
     }
-
-    .kc-social-grid {
-        grid-column-end: 12;
-        --pf-l-grid__item--GridColumnEnd: span 12;
+    #kc-form-login input[type="text"],
+    #kc-form-login input[type="password"] {
+        font-size: 15px;
     }
-
-    .kc-social-grid .kc-social-icon-text {
-        left: -15px;
+    #kc-social-providers {
+        padding: 10px 0 4px 0;
     }
 }
-
-.login-pf-page .login-pf-signup {
-    font-size: 15px;
-    color: #72767b;
-}
-#kc-content-wrapper .row {
-    margin-left: 0;
-    margin-right: 0;
-}
-
-.login-pf-page.login-pf-page-accounts {
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.login-pf-page .btn-primary {
-    margin-top: 0;
-}
-
-.login-pf-page .list-view-pf .list-group-item {
-    border-bottom: 1px solid #ededed;
-}
-
-.login-pf-page .list-view-pf-description {
-    width: 100%;
-}
-
-#kc-form-login div.form-group:last-of-type,
-#kc-register-form div.form-group:last-of-type,
-#kc-update-profile-form div.form-group:last-of-type,
-#kc-update-email-form div.form-group:last-of-type{
-    margin-bottom: 0px;
-}
-
-.no-bottom-margin {
-    margin-bottom: 0;
-}
-
-#kc-back {
-    margin-top: 5px;
-}
-
-/* Recovery codes */
-.kc-recovery-codes-warning {
-    margin-bottom: 32px;
-}
-.kc-recovery-codes-warning .pf-c-alert__description p {
-    font-size: 0.875rem;
-}
-.kc-recovery-codes-list {
-    list-style: none;
-    columns: 2;
-    margin: 16px 0;
-    padding: 16px 16px 8px 16px;
-    border: 1px solid #D2D2D2;
-}
-.kc-recovery-codes-list li {
-    margin-bottom: 8px;
-    font-size: 11px;
-}
-.kc-recovery-codes-list li span {
-    color: #6A6E73;
-    width: 16px;
-    text-align: right;
-    display: inline-block;
-    margin-right: 1px;
-}
-
-.kc-recovery-codes-actions {
-    margin-bottom: 24px;
-}
-.kc-recovery-codes-actions button {
-    padding-left: 0;
-}
-.kc-recovery-codes-actions button i {
-    margin-right: 8px;
-}
-
-.kc-recovery-codes-confirmation {
-    align-items: baseline;
-    margin-bottom: 16px;
-}
-
-#certificate_subjectDN {
-    overflow-wrap: break-word
-}
-/* End Recovery codes */
