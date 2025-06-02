@@ -1,27 +1,97 @@
-#version: '3.9'
+# #version: '3.9'
+
+# services:
+#   # Servicio para la base de datos PostgreSQL
+#   db:
+#     image: postgres:latest
+#     volumes:
+#       - postgres_data:/var/lib/postgresql/data/
+#     environment:
+#       - POSTGRES_PASSWORD=postgres
+#       - POSTGRES_USER=postgres
+#       - POSTGRES_DB=neuralshoes
+#     ports:
+#       - "5432:5432"
+
+#   # Servicio para el backend Django
+#   backend:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile
+#     volumes:
+#       - .:/app
+#     depends_on:
+#       - db
+#     environment:
+#       - DEBUG=True
+#       - SECRET_KEY=django-insecure-key-for-development
+#       - DB_NAME=neuralshoes
+#       - DB_USER=postgres
+#       - DB_PASSWORD=postgres
+#       - DB_HOST=db
+#       - DB_PORT=5432
+#     ports:
+#       - "8001:8000"  # 8001 en el host
+
+#     # Base de datos de Keycloak
+#   keycloak-db:
+#     image: postgres:latest #13
+#     environment:
+#       POSTGRES_DB: keycloak
+#       POSTGRES_USER: keycloak
+#       POSTGRES_PASSWORD: keycloak
+#     volumes:
+#       - keycloak_data:/var/lib/postgresql/data
+
+#   # Keycloak Server
+#   keycloak:
+#     image: quay.io/keycloak/keycloak:latest #26.2.0 #24.0.3
+#     command: start-dev
+#     environment:
+#       KC_DB: postgres
+#       KC_DB_URL_HOST: keycloak-db
+#       KC_DB_URL_DATABASE: keycloak
+#       KC_DB_USERNAME: keycloak
+#       KC_DB_PASSWORD: keycloak
+#       KEYCLOAK_ADMIN: admin
+#       KEYCLOAK_ADMIN_PASSWORD: 123
+#     ports:
+#       - "8080:8080"
+#     depends_on:
+#       - keycloak-db
+
+# volumes:
+#   postgres_data:
+#   keycloak_data:
 
 services:
-  # Servicio para la base de datos PostgreSQL
   db:
-    image: postgres:latest
+    image: postgres:latest #15
+    #container_name: postgres_neuralshoes_db
     volumes:
       - postgres_data:/var/lib/postgresql/data/
+    networks:
+      - keycloak-network
     environment:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_DB=neuralshoes
-    ports:
+    restart: unless-stopped  # Reinicia el servicio automáticamente si falla
+    ports: 
       - "5432:5432"
 
-  # Servicio para el backend Django
   backend:
+    #container_name: backend_api_django
     build:
       context: .
       dockerfile: Dockerfile
     volumes:
       - .:/app
+    networks:
+      - keycloak-network  
     depends_on:
       - db
+    restart: unless-stopped  
     environment:
       - DEBUG=True
       - SECRET_KEY=django-insecure-key-for-development
@@ -31,21 +101,23 @@ services:
       - DB_HOST=db
       - DB_PORT=5432
     ports:
-      - "8001:8000"  # 8001 en el host
+      - "8000:8000"
 
-    # Base de datos de Keycloak
   keycloak-db:
-    image: postgres:latest #13
+    image: postgres:latest #15
+    #container_name: keycloak-db
     environment:
       POSTGRES_DB: keycloak
       POSTGRES_USER: keycloak
       POSTGRES_PASSWORD: keycloak
+    restart: unless-stopped
     volumes:
       - keycloak_data:/var/lib/postgresql/data
+    networks:
+      - keycloak-network
 
-  # Keycloak Server
   keycloak:
-    image: quay.io/keycloak/keycloak:latest #26.2.0 #24.0.3
+    image: quay.io/keycloak/keycloak:latest #24.0.3
     command: start-dev
     environment:
       KC_DB: postgres
@@ -55,11 +127,20 @@ services:
       KC_DB_PASSWORD: keycloak
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: 123
+      KC_HTTP_RESPONSE_HEADER_CONTENT_SECURITY_POLICY: "frame-ancestors 'self' http://localhost:4200"
+    restart: unless-stopped  
     ports:
       - "8080:8080"
     depends_on:
       - keycloak-db
+    volumes:
+      - ./themes:/opt/keycloak/themes
+    networks:
+      - keycloak-network
 
 volumes:
   postgres_data:
   keycloak_data:
+
+networks:
+  keycloak-network:

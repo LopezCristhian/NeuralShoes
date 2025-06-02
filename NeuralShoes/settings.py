@@ -61,23 +61,34 @@ MIDDLEWARE = [
 CORS_ALLOW_ALL_ORIGINS = True
 
 # Configuración de Keycloak
-KEYCLOAK_SERVER_URL = 'http://localhost:8080/' #'http://keycloak:8080/'  # Usa el nombre del servicio interno
+KEYCLOAK_SERVER_URL = 'http://keycloak:8080/' #'http://localhost:8080/'  # Usa el nombre del servicio interno (si usas Docker)
 KEYCLOAK_REALM = 'neuralshoes'
-KEYCLOAK_CLIENT_ID = 'django-api'
-KEYCLOAK_CLIENT_SECRET = 'nD0pHBoKKxtJS0kWf284jhAcl9uHKm2M'  # El que copiaste de la pestaña Credentials
+KEYCLOAK_CLIENT_ID = 'django_api'
+KEYCLOAK_CLIENT_SECRET = 'P6irtejuCA3whyD1CC9s9jVDi6nA4fXI'  # El que copiaste de la pestaña Credentials
 
 # Opcional: para acceso público a tu API desde fuera de Docker
 KEYCLOAK_PUBLIC_SERVER_URL = 'http://localhost:8080/'  # URL para clientes externos
 
 KEYCLOAK_CONFIG = {
-    'SERVER_URL': KEYCLOAK_SERVER_URL,
-    'REALM': KEYCLOAK_REALM,
-    'CLIENT_ID': KEYCLOAK_CLIENT_ID,
-    'CLIENT_SECRET': KEYCLOAK_CLIENT_SECRET,
-    'PUBLIC_SERVER_URL': KEYCLOAK_PUBLIC_SERVER_URL,    
-    'PUBLIC_REALM': KEYCLOAK_PUBLIC_SERVER_URL,
+    'SERVER_URL': 'http://keycloak:8080/',
+    'REALM': 'neuralshoes',
+    'CLIENT_ID': 'django_api',
+    'CLIENT_SECRET': 'P6irtejuCA3whyD1CC9s9jVDi6nA4fXI',  # El que copiaste de la pestaña Credentials
+    'KEYCLOAK_PUBLIC_KEY':'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA27gP4fHxTKVw6xbIdJygjDZmo9Whtk6YkTYXdz/mtDq9ecKpKSa8jym/ruOVKHOVT6+pm2WSDGQzPyrf8zE8LoFzMHTzy4xUGp7IluZKRBqzmYneqiYfBZrqRsrP6+wOnhDxOn8TAIUdQ7hbUIrPm9HCoNEv1UDIr6CrQ+MK3jg2o5vb6gVM6yNDmnkl3YKrg9vByNeACTFPDYBL1nAUwW1fFntjOkVjMIIMCsmk6ZZLBqdIvH+x+F5XosBXFGHfzzdjC/FzyEpOwVDMo3jiAILflATYIb7jWha25elnxY3+UaZs5IBrxl1rCy+c69IMjEn6VNH53JfEqxfPqypF3wIDAQAB',
+    # 'PUBLIC_SERVER_URL': KEYCLOAK_PUBLIC_SERVER_URL,    
+    # 'PUBLIC_REALM': KEYCLOAK_PUBLIC_SERVER_URL,
     
 }
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'api.authentication.KeycloakAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
+
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend', 
@@ -107,23 +118,23 @@ WSGI_APPLICATION = 'NeuralShoes.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': os.environ.get('DB_NAME', 'neuralshoes'),
-#         'USER': os.environ.get('DB_USER', 'postgres'),
-#         'PASSWORD': os.environ.get('DB_PASSWORD', 'postgres'),
-#         'HOST': os.environ.get('DB_HOST', 'localhost'),
-#         'PORT': os.environ.get('DB_PORT', '5432'),
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('DB_NAME', 'neuralshoes'),
+        'USER': os.environ.get('DB_USER', 'postgres'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'postgres'),
+        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'PORT': os.environ.get('DB_PORT', '5432'),
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

@@ -48,9 +48,17 @@ from functools import wraps
 from jose import jwt
 import requests
 
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+
+from .auth2 import KeycloakAuthentication
+from .permissions2 import HasKeycloakRole
+from .permissions3 import HasKeycloakRoleClient
+
 # API View para obtener toda la información
 @swagger_auto_schema(method='get', operation_description="Obtener toda la información de productos, tallas, pedidos, etc.")
 #@keycloak_protected
+#@permission_classes([IsAuthenticated])
 @api_view(['GET'])
 def allInfo(request):
     data = {
@@ -71,16 +79,17 @@ def allInfo(request):
     
     return JsonResponse(data, status=status.HTTP_200_OK)
 
-@method_decorator(keycloak_protected, name='dispatch')
+#@method_decorator(keycloak_protected, name='dispatch')
 class ClienteViewSet(viewsets.ModelViewSet):
     """
     API endpoints para gestionar clientes
     """
+    
     queryset = Cliente.objects.all()
     serializer_class = ClienteSerializer
-    #permission_classes = [IsAuthenticated, KeycloakPermission]
     
-    #permission_classes = [IsAuthenticated]
+    authentication_classes = [KeycloakAuthentication]
+    permission_classes = [IsAuthenticated, HasKeycloakRole] 
 
     @swagger_auto_schema(
         operation_description="Lista todos los clientes",
@@ -133,7 +142,6 @@ class ClienteViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
 
-# @method_decorator(keycloak_protected, name='dispatch')
 class CategoriaViewSet(viewsets.ModelViewSet):
     """
     API endpoints para gestionar categorias
@@ -141,7 +149,9 @@ class CategoriaViewSet(viewsets.ModelViewSet):
     
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
-    #permission_classes = [IsAuthenticated, KeycloakPermission]
+    
+    authentication_classes = [KeycloakAuthentication]
+    permission_classes = [IsAuthenticated, HasKeycloakRole] 
 
     @swagger_auto_schema(
         operation_description="Lista todas las categorías",
@@ -194,7 +204,6 @@ class CategoriaViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
 
-# @method_decorator(keycloak_protected, name='dispatch')
 class MarcaViewSet(viewsets.ModelViewSet):
     """
     API endpoints para gestionar marcas
@@ -202,7 +211,9 @@ class MarcaViewSet(viewsets.ModelViewSet):
     
     queryset = Marca.objects.all()
     serializer_class = MarcaSerializer
-    #permission_classes = [IsAuthenticated, KeycloakPermission]
+    
+    authentication_classes = [KeycloakAuthentication]
+    permission_classes = [IsAuthenticated, HasKeycloakRole] 
 
     @swagger_auto_schema(
         operation_description="Lista todas las marcas",
@@ -254,13 +265,15 @@ class MarcaViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
 
-# @method_decorator(keycloak_protected, name='dispatch')
 class ProductoViewSet(viewsets.ModelViewSet):
     """
     API endpoints para gestionar productos
     """
     queryset = Producto.objects.all()
     serializer_class = ProductoSerializer
+    
+    authentication_classes = [KeycloakAuthentication]
+    permission_classes = [IsAuthenticated, HasKeycloakRole] 
     
     @swagger_auto_schema(
         operation_description="Lista todos los productos disponibles",
@@ -358,7 +371,10 @@ class ProductoImagenViewSet(viewsets.ModelViewSet):
     API endpoints para gestionar Imagenes de productos
     """
     queryset = ProductoImagen.objects.all()
-    serializer_class = ProductoImagenSerializer     
+    serializer_class = ProductoImagenSerializer   
+    
+    authentication_classes = [KeycloakAuthentication]
+    permission_classes = [IsAuthenticated, HasKeycloakRole]   
     
     @swagger_auto_schema(
         operation_description="Lista todas las imagenes de productos",
@@ -405,13 +421,15 @@ class ProductoImagenViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
 
-# @method_decorator(keycloak_protected, name='dispatch')
 class TallaViewSet(viewsets.ModelViewSet):
     """
     API endpoints para gestionar tallas
     """
     queryset = Talla.objects.all()
     serializer_class = TallaSerializer
+    
+    authentication_classes = [KeycloakAuthentication]
+    permission_classes = [IsAuthenticated, HasKeycloakRole] 
     
     @swagger_auto_schema(
         operation_description="Lista todas las tallas",
@@ -471,6 +489,9 @@ class ColorViewSet(viewsets.ModelViewSet):
     queryset = Color.objects.all()
     serializer_class = ColorSerializer
     
+    authentication_classes = [KeycloakAuthentication]
+    permission_classes = [IsAuthenticated, HasKeycloakRole] 
+    
     @swagger_auto_schema(
         operation_description="Lista todas los colores",
         responses={200: ColorSerializer(many=True)}
@@ -529,6 +550,9 @@ class ProductoTallaColorViewSet(viewsets.ModelViewSet):
     queryset = ProductoTallaColor.objects.all()
     serializer_class = ProductoTallaColorSerializer
     
+    authentication_classes = [KeycloakAuthentication]
+    permission_classes = [IsAuthenticated, HasKeycloakRole] 
+    
     @swagger_auto_schema(
         operation_description="Lista todas las relaciones producto-talla-color",
         responses={200: ProductoTallaColorSerializer(many=True)}
@@ -581,6 +605,9 @@ class CarritoViewSet(viewsets.ModelViewSet):
     
     queryset = Carrito.objects.all()
     serializer_class = CarritoSerializer
+    
+    authentication_classes = [KeycloakAuthentication]
+    permission_classes = [IsAuthenticated, HasKeycloakRoleClient] 
 
     @swagger_auto_schema(
         operation_description="Agrega un producto (variación) al carrito.",
@@ -681,6 +708,9 @@ class CarritoPagarViewSet(viewsets.ModelViewSet):
     
     queryset = Carrito.objects.all()
     serializer_class = CarritoSerializer
+    
+    authentication_classes = [KeycloakAuthentication]
+    permission_classes = [IsAuthenticated, HasKeycloakRoleClient] 
 
     @action(detail=True, methods=['post'], url_path='pagar')
     def pagar_carrito(self, request, pk=None):
@@ -716,6 +746,9 @@ class ItemCarritoViewSet(viewsets.ModelViewSet):
     
     queryset = ItemCarrito.objects.all()
     serializer_class = ItemCarritoSerializer
+    
+    authentication_classes = [KeycloakAuthentication]
+    permission_classes = [IsAuthenticated, HasKeycloakRoleClient] 
 
     @swagger_auto_schema(
         operation_description="Listar todos los items de carrito",
@@ -758,13 +791,15 @@ class ItemCarritoViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)    
     
-#@method_decorator(keycloak_protected, name='dispatch')
 class PedidoViewSet(viewsets.ModelViewSet):
     """
     API endpoints para gestionar pedidos
     """
     queryset = Pedido.objects.all()
     serializer_class = PedidoSerializer
+    
+    authentication_classes = [KeycloakAuthentication]
+    permission_classes = [IsAuthenticated, HasKeycloakRoleClient] 
     
     @swagger_auto_schema(
         operation_description="Lista todos los pedidos",
@@ -811,13 +846,15 @@ class PedidoViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
 
-#@method_decorator(keycloak_protected, name='dispatch')
 class DetallePedidoViewSet(viewsets.ModelViewSet):
     """
     API endpoints para gestionar detalles de pedidos
     """
     queryset = DetallePedido.objects.all()
     serializer_class = DetallePedidoSerializer
+    
+    authentication_classes = [KeycloakAuthentication]
+    permission_classes = [IsAuthenticated, HasKeycloakRoleClient] 
     
     @swagger_auto_schema(
         operation_description="Lista todos los detalles de pedidos",
@@ -887,13 +924,15 @@ class DetallePedidoViewSet(viewsets.ModelViewSet):
     #     serializer = self.get_serializer(detalles, many=True)
     #     return Response(serializer.data)
 
-#@method_decorator(keycloak_protected, name='dispatch')
 class PagoViewSet(viewsets.ModelViewSet):
     """
     API endpoints para gestionar pagos
     """
     queryset = Pago.objects.all()
     serializer_class = PagoSerializer
+    
+    authentication_classes = [KeycloakAuthentication]
+    permission_classes = [IsAuthenticated, HasKeycloakRoleClient] 
     
     @swagger_auto_schema(
         operation_description="Lista todos los pagos",
