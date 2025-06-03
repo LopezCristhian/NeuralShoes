@@ -55,6 +55,10 @@ from .auth2 import KeycloakAuthentication
 from .permissions2 import HasKeycloakRole
 from .permissions3 import HasKeycloakRoleClient
 
+from .permissions4 import PublicGetAdminWritePermission
+from rest_framework.permissions import AllowAny
+from rest_framework.viewsets import ReadOnlyModelViewSet
+
 # API View para obtener toda la información
 @swagger_auto_schema(method='get', operation_description="Obtener toda la información de productos, tallas, pedidos, etc.")
 #@keycloak_protected
@@ -272,8 +276,12 @@ class ProductoViewSet(viewsets.ModelViewSet):
     queryset = Producto.objects.all()
     serializer_class = ProductoSerializer
     
+    #permission_classes = [AllowAny] 
+    
     authentication_classes = [KeycloakAuthentication]
     permission_classes = [IsAuthenticated, HasKeycloakRole] 
+    
+    #permission_classes = [PublicGetAdminWritePermission]
     
     @swagger_auto_schema(
         operation_description="Lista todos los productos disponibles",
@@ -1001,6 +1009,11 @@ class PagoViewSet(viewsets.ModelViewSet):
         
         serializer = self.get_serializer(pagos, many=True)
         return Response(serializer.data)
+
+class PublicProductoViewSet(ReadOnlyModelViewSet):
+    queryset = Producto.objects.all()
+    serializer_class = ProductoSerializer
+    permission_classes = [AllowAny]  # <- acceso sin autenticación
     
 @api_view(['GET'])
 def imagenes_marcas(request):
